@@ -1,4 +1,4 @@
-[Victorious Support AIO]
+#Victorious Support AIO
 
 1. Soraka
 2. Nami
