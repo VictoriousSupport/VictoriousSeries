@@ -66,6 +66,7 @@
     <Compile Include="Plugins\Nami.cs" />
     <Compile Include="Plugins\Sona.cs" />
     <Compile Include="Plugins\Soraka.cs" />
+    <Compile Include="Plugins\Thresh.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
