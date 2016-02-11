@@ -44,8 +44,6 @@ namespace JinxsSupport.Plugins
         static int EMana { get { return 60 * E.Level; } }
         static int RMana { get { return R.Level > 0 ? 100 : 0; } }
 
-        static Menu menu;      // Support Mode
-
         #region Load() Function
         public void Load()
         {
@@ -58,11 +56,6 @@ namespace JinxsSupport.Plugins
             Orbwalking.BeforeAttack += BeforeAttack;      // 이 부분은 AIO Support Mode와 통합할 필요가 있음.
             */
 
-            LoadSpellData();
-
-            Game.PrintChat("<font color=\"#66CCFF\" >Vicorious Thresh</font> - " +
-               "<font color=\"#FFFFFF\" >Version " + Assembly.GetExecutingAssembly().GetName().Version + "</font>");
-
             Game.OnUpdate += Game_OnUpdate;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Drawing.OnDraw += Drawing_OnDraw;
@@ -70,12 +63,17 @@ namespace JinxsSupport.Plugins
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
             EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
+
+            Entry.PrintChat("<font color=\"#FFCC66\" >Thresh</font>");
         }
         #endregion
 
         #region CreateMenu() Function
         public void CreateMenu()
         {
+
+            LoadSpellData();
+
             config = new Menu("Jinx's Thresh", "Jinx's Thresh", true);
 
             //OrbWalk
@@ -148,7 +146,7 @@ namespace JinxsSupport.Plugins
 
             var KSmenu = new Menu("KS", "KS");
             {
-                KSmenu.AddItem(new MenuItem("KS-UseQ", "Use Q KS", true).SetValue(true));
+                KSmenu.AddItem(new MenuItem("KS-UseQ", "Use Q KS", true).SetValue(false));
                 KSmenu.AddItem(new MenuItem("KS-UseE", "Use E KS", true).SetValue(true));
                 KSmenu.AddItem(new MenuItem("KS-UseR", "Use R KS", true).SetValue(false));
 
@@ -970,28 +968,6 @@ namespace JinxsSupport.Plugins
             {
                 Render.Circle.DrawCircle(pos, 150, System.Drawing.Color.Yellow);
             };
-        }
-
-        /// <summary>
-        /// 아래와 같은 설정으로 해놓으면 X(Lasthit) 제외한 모든 미니언키가 불능이 됨. (C/V 키) 
-        /// </summary>
-        /// <param name="args"></param>
-         static void BeforeAttack(Orbwalking.BeforeAttackEventArgs args)
-        {
-            if (menu.Item("enabled").GetValue<bool>())
-            {
-                var lhmode = Orbwalking.Orbwalker.Instances.Find(x => x.ActiveMode == Orbwalking.OrbwalkingMode.LastHit);
-                if (lhmode != null) return;
-
-                if (args.Target.Type == GameObjectType.obj_AI_Minion)
-                {
-                    var alliesinrange = HeroManager.Allies.Count(x => !x.IsMe && x.Distance(Player) <= 1500);
-                    if (alliesinrange > 0)
-                    {
-                        args.Process = false;
-                    }
-                }
-            }
         }
 
         #endregion 

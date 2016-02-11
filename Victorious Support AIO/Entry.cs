@@ -102,8 +102,11 @@ namespace JinxsSupport
             {
                 menu = new Menu("Support Mode", "SupportMode", true);
                 menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(true)).Permashow(true, "Support Mode");
+                //menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(new KeyBind('8', KeyBindType.Toggle, true))).Permashow(true, "Support Mode");
                 menu.AddToMainMenu();
                 Orbwalking.BeforeAttack += BeforeAttack;
+
+                PrintChat("<font color=\"#FFFFFF\" >Version " + Assembly.GetExecutingAssembly().GetName().Version + "</font>");
 
                 var plugins =
                     Assembly.GetExecutingAssembly()
@@ -115,12 +118,11 @@ namespace JinxsSupport
                 {
                     if (plugin.ToString().ToLower().Contains(Player.CharData.BaseSkinName.ToLower()))
                     {
-                        plugin.CreateMenu();                // 각 인터페이스 클래스(챔피언)는 CreateMenu() 항목을 가져야 함.
                         plugin.Load();                      // 각 인터페이스 클래스(챔피언)는 Load() 함수 필요
+                        plugin.CreateMenu();                // 각 인터페이스 클래스(챔피언)는 CreateMenu() 항목을 가져야 함.
                     }
                 }
-
-                PrintChat("<font color=\"#FFFFFF\" >Version " + Assembly.GetExecutingAssembly().GetName().Version + "</font>");
+                
             }
             catch (Exception e)
             {
@@ -134,7 +136,7 @@ namespace JinxsSupport
         /// <param name="msg">The message.</param>
         public static void PrintChat(string msg)
         {
-            Game.PrintChat("<font color='#3492EB'>Jinx's Support:</font> <font color='#FFFFFF'>" + msg + "</font>");
+            Game.PrintChat("<font color='#3492EB'>Victorious Support:</font> <font color='#FFFFFF'>" + msg + "</font>");
         }
 
         /// <summary>

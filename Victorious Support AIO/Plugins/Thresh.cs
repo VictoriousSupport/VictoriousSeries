@@ -26,41 +26,10 @@ using SharpDX;
 using Color = System.Drawing.Color;
 using System.Collections.Generic;
 
-namespace JxsThresh
+namespace JinxsSupport.Plugins
 {
-    class Program
+    internal class Thresh : IPlugin
     {
-        #region Init
-
-        static void Main(string[] args)
-        {
-            CustomEvents.Game.OnGameLoad += Game_OnGameLoad;
-        }
-
-        static void Game_OnGameLoad(EventArgs args)
-        {
-            if (Player.ChampionName != "Thresh")
-                return;
-
-            menu = new Menu("Support Mode", "SupportMode", true);
-            menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(true)).Permashow(true, "Support Mode");
-            menu.AddToMainMenu();
-            Orbwalking.BeforeAttack += BeforeAttack;
-
-            LoadSpellData();
-            LoadMenu();
-
-            Game.PrintChat("<font color=\"#66CCFF\" >Jinx's Thresh</font> - " +
-               "<font color=\"#FFFFFF\" >Version " + Assembly.GetExecutingAssembly().GetName().Version + "</font>");
-
-            Game.OnUpdate += Game_OnUpdate;
-            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
-            Drawing.OnDraw += Drawing_OnDraw;
-            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
-            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
-            Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
-            EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
-        }
         
         static Orbwalking.Orbwalker Orbwalker;
         public static Menu config;
@@ -75,22 +44,36 @@ namespace JxsThresh
         static int EMana { get { return 60 * E.Level; } }
         static int RMana { get { return R.Level > 0 ? 100 : 0; } }
 
-        static Menu menu;      // Support Mode
-
-        static void LoadSpellData()
+        #region Load() Function
+        public void Load()
         {
-            Q = new Spell(SpellSlot.Q, 1075);
-            W = new Spell(SpellSlot.W, 950);
-            E = new Spell(SpellSlot.E, 450);
-            R = new Spell(SpellSlot.R, 420);
+            if (Player.ChampionName != "Thresh")
+                return;
+            /*
+            menu = new Menu("Support Mode", "SupportMode", true);
+            menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(true)).Permashow(true, "Support Mode");
+            menu.AddToMainMenu();
+            Orbwalking.BeforeAttack += BeforeAttack;      // 이 부분은 AIO Support Mode와 통합할 필요가 있음.
+            */
 
-            Q.SetSkillshot(0.5f, 65f, 1900f, true, SkillshotType.SkillshotLine);
-            W.SetSkillshot(0.2f, 10, float.MaxValue, false, SkillshotType.SkillshotCircle);
-            E.SetSkillshot(0.25f, 50, float.MaxValue, false, SkillshotType.SkillshotLine);
+            Game.OnUpdate += Game_OnUpdate;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Drawing.OnDraw += Drawing_OnDraw;
+            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
+            Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
+            EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
+
+            Entry.PrintChat("<font color=\"#FFCC66\" >Thresh</font>");
         }
+        #endregion
 
-        static void LoadMenu()
+        #region CreateMenu() Function
+        public void CreateMenu()
         {
+
+            LoadSpellData();
+
             config = new Menu("Jinx's Thresh", "Jinx's Thresh", true);
 
             //OrbWalk
@@ -163,7 +146,7 @@ namespace JxsThresh
 
             var KSmenu = new Menu("KS", "KS");
             {
-                KSmenu.AddItem(new MenuItem("KS-UseQ", "Use Q KS", true).SetValue(true));
+                KSmenu.AddItem(new MenuItem("KS-UseQ", "Use Q KS", true).SetValue(false));
                 KSmenu.AddItem(new MenuItem("KS-UseE", "Use E KS", true).SetValue(true));
                 KSmenu.AddItem(new MenuItem("KS-UseR", "Use R KS", true).SetValue(false));
 
@@ -226,10 +209,21 @@ namespace JxsThresh
 
             config.AddToMainMenu();
         }
-
         #endregion
 
-        #region Logic
+        #region Logic Combo
+
+        static void LoadSpellData()
+        {
+            Q = new Spell(SpellSlot.Q, 1075);
+            W = new Spell(SpellSlot.W, 950);
+            E = new Spell(SpellSlot.E, 450);
+            R = new Spell(SpellSlot.R, 420);
+
+            Q.SetSkillshot(0.5f, 65f, 1900f, true, SkillshotType.SkillshotLine);
+            W.SetSkillshot(0.2f, 10, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            E.SetSkillshot(0.25f, 50, float.MaxValue, false, SkillshotType.SkillshotLine);
+        }
 
         static void Combo()
         {
@@ -345,7 +339,7 @@ namespace JxsThresh
 
         #endregion
 
-        #region Q
+        #region Logic Q
 
         public static bool CastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
         {
@@ -532,7 +526,7 @@ namespace JxsThresh
 
         #endregion
 
-        #region W
+        #region Logic W
 
         // 렌턴에 OKTW 알고리즘 적용
         public static bool CastWOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
@@ -811,7 +805,7 @@ namespace JxsThresh
 
         #endregion
 
-        #region E
+        #region Logic E
 
         static void CastE(Obj_AI_Hero target)
         {
@@ -859,7 +853,7 @@ namespace JxsThresh
 
         #endregion
 
-        #region R
+        #region Logic R
 
         static void AutoR()
         {
@@ -974,28 +968,6 @@ namespace JxsThresh
             {
                 Render.Circle.DrawCircle(pos, 150, System.Drawing.Color.Yellow);
             };
-        }
-
-        /// <summary>
-        /// 아래와 같은 설정으로 해놓으면 X(Lasthit) 제외한 모든 미니언키가 불능이 됨. (C/V 키) 
-        /// </summary>
-        /// <param name="args"></param>
-         static void BeforeAttack(Orbwalking.BeforeAttackEventArgs args)
-        {
-            if (menu.Item("enabled").GetValue<bool>())
-            {
-                var lhmode = Orbwalking.Orbwalker.Instances.Find(x => x.ActiveMode == Orbwalking.OrbwalkingMode.LastHit);
-                if (lhmode != null) return;
-
-                if (args.Target.Type == GameObjectType.obj_AI_Minion)
-                {
-                    var alliesinrange = HeroManager.Allies.Count(x => !x.IsMe && x.Distance(Player) <= 1500);
-                    if (alliesinrange > 0)
-                    {
-                        args.Process = false;
-                    }
-                }
-            }
         }
 
         #endregion 

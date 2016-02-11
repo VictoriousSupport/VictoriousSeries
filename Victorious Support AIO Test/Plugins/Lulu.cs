@@ -59,8 +59,8 @@ namespace JinxsSupport.Plugins
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             //print chat as game loaded
-            Entry.PrintChat("Victorious Lulu");
-            Entry.PrintChat("Actviator >> Auto Spells >> Config & Help Pix!! (0/10/25)");
+            Entry.PrintChat("<font color=\"#FF8844\" >Lulu</font>");
+            Entry.PrintChat("Actviator >> Auto Spells >> Config & Help Pix!!");
         }
         #endregion
 

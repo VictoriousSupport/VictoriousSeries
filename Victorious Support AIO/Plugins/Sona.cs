@@ -161,7 +161,7 @@ namespace JinxsSupport.Plugins
             Drawing.OnDraw += this.OnDraw;
             AntiGapcloser.OnEnemyGapcloser += this.AntiGapcloser_OnEnemyGapcloser;
             Interrupter2.OnInterruptableTarget += this.Interrupter2_OnInterruptableTarget;
-            Entry.PrintChat("Sona");
+            Entry.PrintChat("<font color=\"#66CCFF\" >Sona</font>");
         }
 
         #endregion

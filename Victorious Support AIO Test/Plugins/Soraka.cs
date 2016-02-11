@@ -123,7 +123,8 @@ namespace JinxsSupport.Plugins
             Game.OnUpdate += GameOnOnGameUpdate;
             Drawing.OnDraw += DrawingOnOnDraw;
 
-            Entry.PrintChat("Victorious Soraka");
+
+            Entry.PrintChat("<font color=\"#66CCFF\" >Soraka</font>");
         }
         #endregion
 

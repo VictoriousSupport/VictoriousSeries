@@ -140,7 +140,7 @@ namespace JinxsSupport.Plugins
                 AntiGapcloser.OnEnemyGapcloser += OnEnemyGapcloser;
                 Orbwalking.BeforeAttack += OrbwalkingOnBeforeAttack;            // by Jinx
 
-                Entry.PrintChat("Victorious Alistar");
+                Entry.PrintChat("<font color=\"#FFCC66\" >Alistar</font>");
             }
             catch (Exception exception)
             {
@@ -149,10 +149,7 @@ namespace JinxsSupport.Plugins
         }
         #endregion
 
-        #endregion
-
-        #region Methods
-
+        #region CreateMenu Function
         public void CreateMenu()
         {
             try
@@ -238,7 +235,11 @@ namespace JinxsSupport.Plugins
                 Console.WriteLine(exception);
             }
         }
+        #endregion
 
+        #endregion
+
+        #region Methods
         /// <summary>
         ///     Gets the active menu item
         /// </summary>

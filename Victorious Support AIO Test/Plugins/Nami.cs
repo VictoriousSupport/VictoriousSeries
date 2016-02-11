@@ -87,7 +87,7 @@ namespace JinxsSupport.Plugins
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
 
-            Entry.PrintChat("Victorious Nami");
+            Entry.PrintChat("<font color=\"#66CCFF\" >Nami</font>");
         }
         #endregion
 
@@ -114,7 +114,7 @@ namespace JinxsSupport.Plugins
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.E", "Use E").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.R", "Use R").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.R.Count", "Minimum targets R")).SetValue(new Slider(3, 1, 5));
-            comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.Ignite", "Use ignite").SetValue(false));
+            //comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.Ignite", "Use ignite").SetValue(false));
 
             _menu.AddSubMenu(comboMenu);
 
@@ -312,13 +312,6 @@ namespace JinxsSupport.Plugins
 
             if (useQ && spells[Spells.Q].IsReady())
             {
-                /*
-                var prediction = spells[Spells.Q].GetPrediction(target).Hitchance;
-                if (prediction >= CustomHitChance)
-                {
-                    spells[Spells.Q].Cast(target);
-                }
-                */
                 var harassQtarget = TargetSelector.GetTarget(spells[Spells.Q].Range, TargetSelector.DamageType.Magical);
                 QCastOKTW(harassQtarget, OKTWPrediction.HitChance.VeryHigh);       // by Jinx
             }
@@ -339,7 +332,8 @@ namespace JinxsSupport.Plugins
 
             if (useW && spells[Spells.W].IsReady())
             {
-                spells[Spells.W].Cast(target);
+                if(target.IsValidTarget(spells[Spells.W].Range))
+                    spells[Spells.W].Cast(target);
             }
         }
 
@@ -356,18 +350,11 @@ namespace JinxsSupport.Plugins
             var useW = _menu.Item("ElNamiReborn.Combo.W").GetValue<bool>();
             var useE = _menu.Item("ElNamiReborn.Combo.E").GetValue<bool>();
             var useR = _menu.Item("ElNamiReborn.Combo.R").GetValue<bool>();
-            var useIgnite = _menu.Item("ElNamiReborn.Combo.Ignite").GetValue<bool>();
+            //var useIgnite = _menu.Item("ElNamiReborn.Combo.Ignite").GetValue<bool>();
             var countR = _menu.Item("ElNamiReborn.Combo.R.Count").GetValue<Slider>().Value;
 
             if (useQ && spells[Spells.Q].IsReady())
             {
-                /*
-                var prediction = spells[Spells.Q].GetPrediction(target).Hitchance;
-                if (prediction >= CustomHitChance)
-                {
-                    spells[Spells.Q].Cast(target, true);
-                }
-                */
                 var harassQtarget = TargetSelector.GetTarget(spells[Spells.Q].Range, TargetSelector.DamageType.Magical);
                 QCastOKTW(harassQtarget, OKTWPrediction.HitChance.VeryHigh);       // by Jinx
             }
@@ -376,34 +363,70 @@ namespace JinxsSupport.Plugins
             {
                 var selectedAlly =
                        HeroManager.Allies.Where(hero => hero.IsAlly && _menu.Item("ElNamiReborn.Settings.E1" + hero.CharData.BaseSkinName).GetValue<bool>())
-                           .OrderBy(closest => closest.Distance(target))
+                           .OrderBy(closest => closest.Distance(target))            // 적 타겟에서 가까운 아군 챔프를 정렬함.
                            .FirstOrDefault();
 
                 if (spells[Spells.E].IsInRange(selectedAlly) && spells[Spells.E].IsReady()) 
                 {
                     spells[Spells.E].CastOnUnit(selectedAlly);
-                } else {
-                    spells[Spells.E].Cast();
                 }
+
             }
 
             if (useW && spells[Spells.W].IsReady())
             {
-                spells[Spells.W].Cast(target);
+                if (target.IsValidTarget(spells[Spells.W].Range))
+                    spells[Spells.W].Cast(target);
             }
 
+            /*
             if (useR && spells[Spells.R].IsReady()
-                && ObjectManager.Player.CountEnemiesInRange(spells[Spells.W].Range) >= countR
+                && ObjectManager.Player.CountEnemiesInRange(spells[Spells.R].Range) >= countR
                 && spells[Spells.R].IsInRange(target.ServerPosition))
             {
-                spells[Spells.R].CastIfHitchanceEquals(target, CustomHitChance, true);
+                spells[Spells.R].CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
+                //spells[Spells.R].CastIfWillHit(target, 2);
+            }
+            */
+
+            /// 라인전(?)
+            float nSumHPPercent = 0;
+            int nEnemyCount = 0;
+
+            /// 한타시(?)
+            float nTotalSumHPPercent = 0;
+            int nTotalenemyCount = 0;
+
+            if (useR && spells[Spells.R].IsReady())
+            {
+                foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(spells[Spells.R].Range)))
+                {
+                    // 라인전 6랩 혹은 갱을 고려하였을때 궁극기 시전 조건 추가: 2명인데 두명의 합산 HP%가 100이 되지 않을 경우 (Max: 200%)
+                    if (ObjectManager.Player.CountEnemiesInRange(spells[Spells.R].Range) == 2)
+                    {
+                        nEnemyCount++;
+                        nSumHPPercent += enemy.Health / enemy.MaxHealth * 90;
+                        // 두명 모두 더한 HP%값이 100% 이하이며, Q 사거리 이내 아군이 1명이라도 함께 있는 경우 궁극기 시전 (라인전에서 아군 원딜과 함께 있는데 적군2명의 피가 평균 반피 이하인 경우 자동 발동)
+                        if ((nEnemyCount==2)&&(nSumHPPercent<100)&&ObjectManager.Player.CountAlliesInRange(spells[Spells.Q].Range) > 0)       
+                        {
+                            spells[Spells.R].CastIfWillHit(enemy, 2);
+                        }
+                    }
+
+                    // 한타시 3인(Default) 이상이고, 평균 HP% = 65% 이하일 경우, 즉 그 이전의 이니시는 손으로 하시고, 이건 콤보중 궁극기로 일괄 데미지를 주고 싶을때 시전...
+                    if (ObjectManager.Player.CountEnemiesInRange(spells[Spells.R].Range) >= countR)
+                    {
+                        nTotalenemyCount++;
+                        nTotalSumHPPercent += enemy.Health / enemy.MaxHealth * 100;
+                        if ((nTotalenemyCount>=countR)&&(nTotalSumHPPercent<(nTotalenemyCount*100*0.75)))
+                        {
+                            spells[Spells.R].CastIfWillHit(enemy, countR);
+                        }
+                            
+                    }
+                }
             }
 
-            if (Player.Distance(target) <= 600 && IgniteDamage(target) >= target.Health &&
-                useIgnite)
-            {
-               Player.Spellbook.CastSpell(_ignite, target);
-            }
         }
 
         #endregion
