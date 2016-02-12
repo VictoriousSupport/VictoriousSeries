@@ -819,7 +819,7 @@ namespace JinxsSupport.Plugins
             {
                 if (Player.Distance(target.Position) <= E.Range)
                 {
-                    if (Player.HpPercents() < 30 && 
+                    if (Player.HpPercents() < 40 && 
                         target.HpPercents() > 20)
                     {
                         Push(target);

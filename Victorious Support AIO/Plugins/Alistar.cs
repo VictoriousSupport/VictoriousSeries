@@ -339,7 +339,7 @@ namespace JinxsSupport.Plugins
                     return;
                 }
 
-                // WQ  zhaqh
+                // WQ 콤보
                 if (IsActive("ElAlistar.Combo.Q") && IsActive("ElAlistar.Combo.W") && Q.IsReady() && W.IsReady())
                 {
                     if (target.IsValidTarget(W.Range) && HasEnoughMana())
@@ -353,9 +353,21 @@ namespace JinxsSupport.Plugins
 
                         if (W.Cast(target).IsCasted())
                         {
+                            /* 6.2 패치까지 쿵쾅콤보
                             var comboTime = Math.Max(0, Player.Distance(target) - 365) / 1.2f - 25;
-                            //var comboTime = Math.Max(0, Player.Distance(target) - 365) / 1.2f + 20;
                             Utility.DelayAction.Add((int)comboTime, () => Q.Cast());
+                            */
+                            /// 6.3 패치: 쿵쾅콤보 로직
+                            if (Player.Distance(target) > 150)
+                            {
+                                Utility.DelayAction.Add(50, () => Q.Cast());
+                                // 150의 거리를 1200의 투사체 속도로 날아가므로, 도달까지 약 125ms 필요, 네트워크 핑지연 포함하더라도 50ms 지연후 Q 발동하면 쿵쾅콤보 성공
+                            }
+                            else
+                            {
+                                if(Q.IsReady()) Q.Cast();
+                                // 그 이하 거리면 그냥 바로 시전
+                            }
                         }
                     }
                 }
