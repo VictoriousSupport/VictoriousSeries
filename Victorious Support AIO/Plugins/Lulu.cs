@@ -38,7 +38,6 @@ namespace JinxsSupport.Plugins
         private static Spell _q, _w, _e, _r;
         private static Menu _menu;
         private static Obj_AI_Base pix;
-        private static string strStatus;
 
         #region Load() Function
         public void Load()
@@ -62,7 +61,6 @@ namespace JinxsSupport.Plugins
             //print chat as game loaded
             Entry.PrintChat("<font color=\"#FF8844\" >Lulu</font>");
             Entry.PrintChat("Actviator >> Auto Spells >> Config & Help Pix!!");
-            strStatus = string.Empty;
         }
         #endregion
 
@@ -172,14 +170,10 @@ namespace JinxsSupport.Plugins
                 Render.Circle.DrawCircle(Player.Position, _q.Range + _e.Range, Color.YellowGreen);
             if (_menu.Item("DPIX").GetValue<bool>())
                 Render.Circle.DrawCircle(pix.Position + new Vector3(0, 0, 15), 75, Color.Yellow, 5, true);
-            if ((_menu.Item("DStatus").GetValue<bool>())&&!string.IsNullOrEmpty(strStatus))
-                Drawing.DrawText(Player.Position.X, Player.Position.X - 120, Color.GreenYellow, strStatus);
-            //DStatus
-            // 
+
         }
         public static void Game_OnGameUpdate (EventArgs args)
         {
-//            strStatus = string.Empty;
             Getpixed();             // set value for pix
             Auto();                 // Kill Steal 용도
             if (_orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)
@@ -188,7 +182,6 @@ namespace JinxsSupport.Plugins
                 Harass();           // E 견제용! (C Key: E + 평타 사용)
             if (_orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear)
                 Harass2();           // E+Q 견제용! (V Key: EQ 사용)
-            //_menu.Item("ElNamiReborn.AutoHarass.Activated").GetValue<KeyBind>().Active
 
             if (_menu.Item("SafeKey", true).GetValue<KeyBind>().Active)
             {
@@ -337,8 +330,6 @@ namespace JinxsSupport.Plugins
 
                 if (bflag)
                 {
-                    //Entry.PrintChat("Lulu & Pix EQ Combo is casted!!");
-                    strStatus = "Pix E+QCated";
                     qCastState = _q.Cast(target);
                 }
             }
@@ -419,7 +410,7 @@ namespace JinxsSupport.Plugins
 
         public static void Harass2()
         {
-            if((Player.Mana * 100 / Player.MaxMana >= _menu.Item("ManaH").GetValue<Slider>().Value)&& _menu.Item("EQH").GetValue<bool>())
+            if((Player.Mana * 100 / Player.MaxMana >= _menu.Item("ManaH").GetValue<Slider>().Value)&& _menu.Item("QEH").GetValue<bool>())
             {
                 PixEQCombo();
             }
@@ -444,7 +435,6 @@ namespace JinxsSupport.Plugins
                     if (target != null && _e.CanCast(target))
                     {
                         _e.CastOnUnit(target);
-                        strStatus = "Harrss E Cated";
                     }
                         
                 }
