@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("Victorious Support")]
-[assembly: AssemblyCopyright("Copyright © Jinxs's Leaguesharp 2016")]
+[assembly: AssemblyCopyright("Copyright © Jinx's Leaguesharp 2016")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -35,5 +35,5 @@ using System.Runtime.InteropServices;
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
 
-[assembly: AssemblyVersion("6.0.1.9")]
+[assembly: AssemblyVersion("6.0.1.10")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
