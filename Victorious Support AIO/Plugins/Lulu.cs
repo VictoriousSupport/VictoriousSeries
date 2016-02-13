@@ -173,7 +173,7 @@ namespace JinxsSupport.Plugins
             if (_menu.Item("DPIX").GetValue<bool>())
                 Render.Circle.DrawCircle(pix.Position + new Vector3(0, 0, 15), 75, Color.Yellow, 5, true);
             if ((_menu.Item("DStatus").GetValue<bool>())&&!string.IsNullOrEmpty(strStatus))
-                Drawing.DrawText(Player.Position.X, Player.Position.X - 120, Color.GreenYellow, "");
+                Drawing.DrawText(Player.Position.X, Player.Position.X - 120, Color.GreenYellow, strStatus);
             //DStatus
             // 
         }
@@ -338,7 +338,7 @@ namespace JinxsSupport.Plugins
                 if (bflag)
                 {
                     //Entry.PrintChat("Lulu & Pix EQ Combo is casted!!");
-                    strStatus = "Pix E+Q Cated";
+                    strStatus = "Pix E+QCated";
                     qCastState = _q.Cast(target);
                 }
             }
