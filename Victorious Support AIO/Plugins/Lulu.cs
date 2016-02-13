@@ -179,7 +179,7 @@ namespace JinxsSupport.Plugins
         }
         public static void Game_OnGameUpdate (EventArgs args)
         {
-            strStatus = string.Empty;
+//            strStatus = string.Empty;
             Getpixed();             // set value for pix
             Auto();                 // Kill Steal ¿ëµµ
             if (_orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)
