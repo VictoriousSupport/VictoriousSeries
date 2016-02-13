@@ -345,7 +345,7 @@ namespace JinxsSupport.Plugins
                 return;
             }
 
-            if (_r.IsReady() && !Player.IsDead && Player.HealthPercent < 20)
+            if (_r.IsReady() && !Player.IsDead && Player.HealthPercent < 30 && Player.CountEnemiesInRange(_r.Range) > 0)
             {
                 _r.CastOnUnit(Player);
                 return;
