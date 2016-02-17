@@ -16,7 +16,6 @@
 /// </summary>
 /// 
 
-
 using System;
 using System.Linq;
 using System.Reflection;
@@ -74,7 +73,7 @@ namespace JinxsSupport.Plugins
 
             LoadSpellData();
 
-            config = new Menu("Jinx's Thresh", "Jinx's Thresh", true);
+            config = new Menu("Victorious Thresh", "Jinx's Thresh", true);
 
             //OrbWalk
             Orbwalker = new Orbwalking.Orbwalker(config.SubMenu("Orbwalking"));
@@ -123,7 +122,6 @@ namespace JinxsSupport.Plugins
                 combomenu.AddItem(new MenuItem("FlayPush", "Flay Push Key", true).SetValue(new KeyBind("H".ToCharArray()[0], KeyBindType.Press)));
                 combomenu.AddItem(new MenuItem("FlayPull", "Flay Pull Key", true).SetValue(new KeyBind("J".ToCharArray()[0], KeyBindType.Press)));
                 combomenu.AddItem(new MenuItem("SafeLanternKey", "Safe Lantern Key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
-
                 config.AddSubMenu(combomenu);
             }
 

@@ -94,7 +94,7 @@ namespace JinxsSupport.Plugins
         #region CreateMenu
         public void CreateMenu()
         {
-            _menu = new Menu("Jinx's Nami", "menu", true);
+            _menu = new Menu("Victorious Nami", "menu", true);
 
             //ElNamiReborn.Orbwalker
             var orbwalkerMenu = new Menu("Orbwalker", "orbwalker");

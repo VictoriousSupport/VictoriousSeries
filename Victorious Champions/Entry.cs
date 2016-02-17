@@ -136,7 +136,7 @@ namespace JinxsSupport
         /// <param name="msg">The message.</param>
         public static void PrintChat(string msg)
         {
-            Game.PrintChat("<font color='#3492EB'>Victorious Support:</font> <font color='#FFFFFF'>" + msg + "</font>");
+            Game.PrintChat("<font color='#3492EB'>Victorious:</font> <font color='#FFFFFF'>" + msg + "</font>");
         }
 
         /// <summary>

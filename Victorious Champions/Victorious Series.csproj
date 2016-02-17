@@ -8,7 +8,7 @@
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>JinxsSupport</RootNamespace>
-    <AssemblyName>Victorious Support AIO</AssemblyName>
+    <AssemblyName>Victorious Series</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PreBuildEvent />
@@ -61,6 +61,7 @@
     <Compile Include="IPlugin.cs" />
     <Compile Include="OKTWPrediction.cs" />
     <Compile Include="Plugins\Alistar.cs" />
+    <Compile Include="Plugins\Bard.cs" />
     <Compile Include="Plugins\Leona.cs" />
     <Compile Include="Plugins\Lulu.cs" />
     <Compile Include="Plugins\Nami.cs" />
@@ -72,6 +73,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="Readme.md" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

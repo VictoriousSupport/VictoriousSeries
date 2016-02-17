@@ -38,7 +38,6 @@ namespace JinxsSupport.Plugins
         private static Spell _q, _w, _e, _r;
         private static Menu _menu;
         private static Obj_AI_Base pix;
-        private static string strStatus;
 
         #region Load() Function
         public void Load()
@@ -62,8 +61,6 @@ namespace JinxsSupport.Plugins
             //print chat as game loaded
             Entry.PrintChat("<font color=\"#FF8844\" >Lulu</font>");
             Entry.PrintChat("Actviator >> Auto Spells >> Config & Help Pix!!");
-
-            strStatus = string.Empty;
         }
         #endregion
 
@@ -71,7 +68,7 @@ namespace JinxsSupport.Plugins
         public void CreateMenu()
         {
             //Menu instance
-            _menu = new Menu(Player.ChampionName, Player.ChampionName, true);
+            _menu = new Menu("Victorious Lulu", Player.ChampionName, true);
             //Orbwalker
             Menu orbwalkerMenu = new Menu("Orbwalker", "Orbwalker");
             _orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);
@@ -173,9 +170,6 @@ namespace JinxsSupport.Plugins
                 Render.Circle.DrawCircle(Player.Position, _q.Range + _e.Range, Color.YellowGreen);
             if (_menu.Item("DPIX").GetValue<bool>())
                 Render.Circle.DrawCircle(pix.Position + new Vector3(0, 0, 15), 75, Color.Yellow, 5, true);
-
-            var mpos = Drawing.WorldToScreen(Player.Position);
-            Drawing.DrawText(mpos[0], mpos[1]-120, Color.Red, strStatus);
 
         }
         public static void Game_OnGameUpdate (EventArgs args)
@@ -351,7 +345,7 @@ namespace JinxsSupport.Plugins
                 return;
             }
 
-            if (_r.IsReady() && !Player.IsDead && Player.HealthPercent < 20)
+            if (_r.IsReady() && !Player.IsDead && Player.HealthPercent < 30 && Player.CountEnemiesInRange(_r.Range) > 0)
             {
                 _r.CastOnUnit(Player);
                 return;
@@ -361,7 +355,7 @@ namespace JinxsSupport.Plugins
 
         public static void Combo()
         {
-            strStatus = "Combo Cated";
+
             #region Cast: W
             // W 스킬은 메뉴에서 지정이 되어 있어야 하고, 또한 타게팅이 되어 있어야 함.
             // 타게팅은 기본설정을 따라가게 되고, 미리 클릭해서 설정해놓으면 됨. (정글링 대응)
@@ -419,7 +413,6 @@ namespace JinxsSupport.Plugins
             if((Player.Mana * 100 / Player.MaxMana >= _menu.Item("ManaH").GetValue<Slider>().Value)&& _menu.Item("QEH").GetValue<bool>())
             {
                 PixEQCombo();
-                strStatus = "Harass E+Q Cated";
             }
         }
 
@@ -441,7 +434,6 @@ namespace JinxsSupport.Plugins
                     var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                     if (target != null && _e.CanCast(target))
                     {
-                        strStatus = "Harass E Cated";
                         _e.CastOnUnit(target);
                     }
                         

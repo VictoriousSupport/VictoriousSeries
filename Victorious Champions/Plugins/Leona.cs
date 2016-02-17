@@ -91,7 +91,7 @@ namespace JinxsSupport.Plugins
         /// <returns></returns>
         public void CreateMenu()
         {
-            this.Menu = new Menu("ElLeona", "ElLeona");
+            this.Menu = new Menu("Victorious Leona", "ElLeona");
             {
                 var orbwalkerMenu = new Menu("Orbwalker", "orbwalker");
                 Orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);

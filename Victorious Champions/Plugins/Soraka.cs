@@ -131,7 +131,7 @@ namespace JinxsSupport.Plugins
         #region CreateMenu() Function
         public void CreateMenu()
         {
-            Menu = new Menu("Jinx's Soraka", "sSoraka", true);
+            Menu = new Menu("Victorious Soraka", "sSoraka", true);
             {
                 // Target Selector
                 var tsMenu = new Menu("Target Selector", "ssTS");

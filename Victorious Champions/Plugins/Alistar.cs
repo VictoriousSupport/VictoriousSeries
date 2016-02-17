@@ -138,7 +138,6 @@ namespace JinxsSupport.Plugins
                 AttackableUnit.OnDamage += AttackableUnit_OnDamage;
                 Interrupter2.OnInterruptableTarget += OnInterruptableTarget;
                 AntiGapcloser.OnEnemyGapcloser += OnEnemyGapcloser;
-                Orbwalking.BeforeAttack += OrbwalkingOnBeforeAttack;            // by Jinx
 
                 Entry.PrintChat("<font color=\"#FFCC66\" >Alistar</font>");
             }
@@ -154,7 +153,7 @@ namespace JinxsSupport.Plugins
         {
             try
             {
-                Menu = new Menu("Jinx's Alistar", "ElAlistar", true);
+                Menu = new Menu("Victorious Alistar", "ElAlistar", true);
 
                 var targetselectorMenu = new Menu("Target Selector", "Target Selector");
                 {
@@ -187,8 +186,8 @@ namespace JinxsSupport.Plugins
                     flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo.Range", "QW Combo Start Range").SetValue(new Slider(320, 250, 350)));    // new by Jinx
                     flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo.Delay", "Q -> W Delay").SetValue(new Slider(400, 200, 800)));           // new by Jinx
                     flashMenu.AddItem(
-                    new MenuItem("ElAlistar.Combo.QWkey", "QW HotKey (C Only)").SetValue(
-                        new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
+                    new MenuItem("ElAlistar.Combo.QWkey", "QW HotKey").SetValue(
+                        new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
                 }
 
                 Menu.AddSubMenu(flashMenu);
@@ -222,7 +221,7 @@ namespace JinxsSupport.Plugins
 
                 var miscellaneousMenu = new Menu("Miscellaneous", "Misc");
                 {
-                    miscellaneousMenu.AddItem(new MenuItem("ElAlistar.Ignite", "Use Ignite").SetValue(false));
+                    //miscellaneousMenu.AddItem(new MenuItem("ElAlistar.Ignite", "Use Ignite").SetValue(false));
                     miscellaneousMenu.AddItem(new MenuItem("ElAlistar.Drawings.W", "Draw W range").SetValue(true));
 
                 }
@@ -493,38 +492,11 @@ namespace JinxsSupport.Plugins
                     case Orbwalking.OrbwalkingMode.Combo:
                         OnCombo();
                         break;
-                    case Orbwalking.OrbwalkingMode.LaneClear:
-
-                        break;
                 }
-
-                // 점화옵션 삭제
-                /*
-                if (IsActive("ElAlistar.Ignite"))
-                {
-                    HandleIgnite();
-                }
-                */
 
                 if (Menu.Item("ElAlistar.Combo.QWkey").GetValue<KeyBind>().Active)
                 {
-                    if (!Q.IsReady() && !W.IsReady()) return;
-
-                    // 단축키(T) 눌렸을때 QW 순차적 발동, Q가 발동되면 x msec 안에 이동한 반대방향으로 던짐
-                    // 적이 접근하면 띄워 던지는거보다 그냥 던지는게 빠르므로 그냥 두면 되고
-                    // 적에게 충분히 접근하여 띄운후 이동하여 던지는게 목표 (사실 손으로 하는게 더 좋지 않을까 계속 고민중임)
-                    // 항상 아군쪽으로 던져야 한다는 생각을 하기는 하는데... 그게 지금 기술로 코드상으로 구현하기 쉽지 않음.
-                    // 정상적인  Q사거리보다 짧게 설정함.
-                    var QWStartRange = Menu.Item("ElAlistar.QW.Combo.Range").GetValue<Slider>().Value;
-                    var target = TargetSelector.GetTarget(QWStartRange, TargetSelector.DamageType.Magical);
-                    if (target != null && W.IsReady() && Q.IsReady() && IsActive("ElAlistar.QW.Combo") && target.IsValidTarget(QWStartRange) && !target.IsDead && HasEnoughMana())
-                    {
-                        var QWStartDelay = Menu.Item("ElAlistar.QW.Combo.Delay").GetValue<Slider>().Value;
-                        Q.Cast();
-                        Utility.DelayAction.Add((int)QWStartDelay, () => W.Cast(target));
-                        // 먼저 Q를 시전하고, 지정된 시간 이후에 W를 타겟에 시전함.
-                    }
-                    else return;
+                    QWCombo();
                 }
 
             }
@@ -534,16 +506,28 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        /// <summary>
-        ///     Called before the orbwalker attacks a unit.
-        /// </summary>
-        /// <param name="args">The <see cref="Orbwalking.BeforeAttackEventArgs" /> instance containing the event data.</param>
-        private static void OrbwalkingOnBeforeAttack(Orbwalking.BeforeAttackEventArgs args)
+        private static void QWCombo()
         {
-            if (args.Target.IsValid<Obj_AI_Minion>() && (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed))
+
+            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);  // 일단 커서 방향으로 움직임
+            if (!Q.IsReady() && !W.IsReady()) return;
+
+            // 단축키(T) 눌렸을때 QW 순차적 발동, Q가 발동되면 x msec 안에 이동한 반대방향으로 던짐
+            // 적이 접근하면 띄워 던지는거보다 그냥 던지는게 빠르므로 그냥 두면 되고
+            // 적에게 충분히 접근하여 띄운후 이동하여 던지는게 목표 (사실 손으로 하는게 더 좋지 않을까 계속 고민중임)
+            // 항상 아군쪽으로 던져야 한다는 생각을 하기는 하는데... 그게 지금 기술로 코드상으로 구현하기 쉽지 않음.
+            // 정상적인  Q사거리보다 짧게 설정함.
+            var QWStartRange = Menu.Item("ElAlistar.QW.Combo.Range").GetValue<Slider>().Value;
+            var target = TargetSelector.GetTarget(QWStartRange, TargetSelector.DamageType.Magical);
+            if (target != null && W.IsReady() && Q.IsReady() && IsActive("ElAlistar.QW.Combo") && target.IsValidTarget(QWStartRange) && !target.IsDead && HasEnoughMana())
             {
-                    args.Process = false;
+                var QWStartDelay = Menu.Item("ElAlistar.QW.Combo.Delay").GetValue<Slider>().Value;
+                Q.Cast();
+                Utility.DelayAction.Add((int)QWStartDelay, () => W.Cast(target));
+                // 먼저 Q를 시전하고, 지정된 시간 이후에 W를 타겟에 시전함.
             }
+            else return;
+
         }
 
         #endregion
