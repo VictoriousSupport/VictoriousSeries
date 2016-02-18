@@ -12,7 +12,7 @@ What is the [Victorious Series](https://github.com/VictoriousSupport/VictoriousS
 
 Supported Champion
 ---
-![](./properties/support.png)
+![](./Properties/support.png)
 
 1. **Soraka**
  - Origin: Sophie's Soraka by ChewyMoon
