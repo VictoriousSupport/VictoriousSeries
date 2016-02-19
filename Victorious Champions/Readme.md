@@ -44,6 +44,7 @@ Supported Champion
  - Q Cast: OKTW Prediction
  - New Q Harss Logic: [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
  - New R Logic : [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
+ - New E Shield Logic (Perfact): [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
 8. Sona (WIP)
  - Origin: ElEasy by jQuery
 9. Leona (WIP)
@@ -52,17 +53,20 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.2.4]
+    - 시비르 E Shield Logic 전면 수정 (기술적 한계 극복)
+    - 시비르 W Logic 수정
+    - 시비르 기타 버그 수정
 
   - [6.3.2.2]
     - 소라카/나미 Circle Skill Logic (AOE) 개선 (소라카 Q/E, 나미 Q)
     - **Sivir**
      - Harass 모드 강화
-        - Q Logic: AOE(멀티타겟) 작동시
-        - Q Logic: 사거리 950 이상에 2타 가능할시
+        - Q Logic: AOE(멀티타겟) && 사거리 950 이상에 2타 가능할시
      - Smart Laneclear (with W Logic)
-        - W Logic: 미니언이 8마리 이상이고, AA+W로 쉽게 정리할 수 있을때 발동
+        - W Logic: 미니언이 11마리 이상 일때
      - Selectable E Shield
-        - E Logic: 타게팅 기술에 대해 기술 발동 설정 가능 (논타겟은 ezVade에서 동작?)
+        - E Logic: 모든 기술에 대해 E Cast 를 선택할 수 있도록 정의
      - 보수적이고 제한적인 R Logic
         - R Logic: Q 사거리내 적군 2명이상, R 사거리내 아군 3명이상이면 자동 발동
 

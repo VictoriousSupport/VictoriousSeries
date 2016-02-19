@@ -18,6 +18,23 @@ namespace JinxsSupport.Plugins
         private static readonly Obj_AI_Hero player = ObjectManager.Player;
         public static float QMANA = 0, WMANA = 0, EMANA = 0, RMANA = 0;                // by Jinx (OKTW)
 
+        public struct EShieldDB
+        {
+            public string strSpellName;
+            public bool bEnable;
+            public EShieldDB(string strName, bool Enable)
+            {
+                strSpellName = strName;
+                bEnable = Enable;
+            }
+        }
+        private static bool bIniEShieldMenu = false;        // Eshield Menu Configure Flag
+        private static int g_nTotalSpellCnt = 0;
+        public static EShieldDB[] nEBlockSpellList;
+
+        private static bool g_bWComboEnable = false;        // W Cast Combo Enable
+        private static bool g_bWHarassEnable = false;       // W Cast Harass Enable
+
         #region Load() Function
         public void Load()
         {
@@ -32,12 +49,20 @@ namespace JinxsSupport.Plugins
             R = new Spell(SpellSlot.R, 1000f);
             Q.SetSkillshot(0.25f, 90f, 1350f, false, SkillshotType.SkillshotLine);
 
+            nEBlockSpellList = new EShieldDB[20];
+            bIniEShieldMenu = false;
+            g_bWComboEnable = true;
+            g_bWHarassEnable = true;
+            g_nTotalSpellCnt = 0;
+
             Drawing.OnDraw += OnDraw;
             Game.OnUpdate += Game_OnGameUpdate;                                 // Q/R Logic for Combo / Harass Mode
             Orbwalking.AfterAttack += Orbwalking_OnAfterAttack;                 // W Logic
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;   // Cast E 발동조건
 
             Entry.PrintChat("<font color=\"#66CCFF\" >Sivir</font>");
+            Entry.PrintChat("<font color=\"#FFFFFF\" >Turn off ezVade SivirE (E) Use</font>");
+            Entry.PrintChat("<font color=\"#FFFFFF\" >Enemies's Unit Spells(Targeting Skill) are enabled basically(*).</font>");
         }
         #endregion
 
@@ -68,30 +93,71 @@ namespace JinxsSupport.Plugins
 
             //Draw
             Config.AddSubMenu(new Menu("Draw", "Draw"));
-            Config.SubMenu("Draw").AddItem(new MenuItem("Draw_Disabled", "Disable All Spell Drawings").SetValue(false));
-            Config.SubMenu("Draw").AddItem(new MenuItem("Qdraw", "Draw Q Range").SetValue(true));
-            Config.SubMenu("Draw").AddItem(new MenuItem("Rdraw", "Draw R Range").SetValue(true));
-            Config.SubMenu("Draw").AddItem(new MenuItem("combodamage", "Damage on HPBar")).SetValue(true);
+            Config.SubMenu("Draw").AddItem(new MenuItem("Draw_AA", "Draw AA").SetValue(true));
+            Config.SubMenu("Draw").AddItem(new MenuItem("Qdraw", "Draw Q Range").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("Rdraw", "Draw R Range").SetValue(false));
+            Config.SubMenu("Draw").AddItem(new MenuItem("combodamage", "Damage Indicator")).SetValue(true);
 
-            //Misc
+            //E Shield
             Config.AddSubMenu(new Menu("E Shield", "CastE"));
-            Config.SubMenu("CastE").AddItem(new MenuItem("autoE", "Enable E Shield").SetValue(true));
-            Config.SubMenu("CastE").AddItem(new MenuItem("Edmg", "Attacted DMG HP%", true).SetValue(new Slider(0, 100, 0)));      // 몇% 짜리 데미지인지 설정
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != player.Team))
             {
-                for (int i = 0; i < 4; i++)     // 기술은 최대 4개지...
+                var spellQ = enemy.Spellbook.Spells[0];
+                var spellW = enemy.Spellbook.Spells[1];
+                var spellE = enemy.Spellbook.Spells[2];
+                var spellR = enemy.Spellbook.Spells[3];
+
+                bool EnableQ = false;
+                bool EnableW = false;
+                bool EnableE = false;
+                bool EnableR = false;
+
+                if (spellQ.SData.TargettingType == SpellDataTargetType.Unit)
                 {
-                    var spell = enemy.Spellbook.Spells[i];
-                    if (spell.SData.TargettingType == SpellDataTargetType.Unit)
-                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spell.SData.Name, spell.Name).SetValue(true));
+                    EnableQ = true;
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} (*)", spellQ.Name)).SetValue(EnableQ));
                 }
+                else
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)).SetValue(EnableQ));
+
+                if (spellW.SData.TargettingType == SpellDataTargetType.Unit)
+                {
+                    EnableW = true;
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} (*)", spellW.Name)).SetValue(EnableW));
+                }
+                else
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)).SetValue(EnableW));
+
+                if (spellE.SData.TargettingType == SpellDataTargetType.Unit)
+                {
+                    EnableE = true;
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} (*)", spellE.Name)).SetValue(EnableE));
+                }
+                else
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)).SetValue(EnableE));
+
+                if (spellR.SData.TargettingType == SpellDataTargetType.Unit)
+                {
+                    EnableR = true;
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} (*)", spellR.Name)).SetValue(EnableR));
+                }
+                else
+                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} ({1})", spellR.Name, spellR.SData.TargettingType)).SetValue(EnableR));
+
+                nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellQ.SData.Name, EnableQ);
+                nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellW.SData.Name, EnableW);
+                nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellE.SData.Name, EnableE);
+                nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellR.SData.Name, EnableR);
             }
+
+            bIniEShieldMenu = true;
 
             Config.AddToMainMenu();
 
         }
         #endregion
 
+        #region Combo/Harass
         private static void combo()
         {
             if (Q.IsReady() && !player.IsWindingUp) ComboLogicQ();
@@ -104,70 +170,115 @@ namespace JinxsSupport.Plugins
             if (Q.IsReady() && Config.Item("hQ").GetValue<bool>() && player.ManaPercent >= harassmana)
                 HarassLogicQ();
         }
+        #endregion
 
+        #region EventHandler
         // Cast W 
-        private static void Orbwalking_OnAfterAttack(AttackableUnit unit, AttackableUnit target)
+        private void Orbwalking_OnAfterAttack(AttackableUnit unit, AttackableUnit target)
         {
+
             var harassmana = Config.Item("harassmana").GetValue<Slider>().Value;
-            if (!W.IsReady() || !unit.IsMe || !(target is Obj_AI_Hero))
-                return;
 
-            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit || Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)
-                return;
+            if (!W.IsReady())                                                       return;
+            if (!unit.IsMe && Orbwalker.GetTarget().IsValidTarget())                return;
+            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LastHit)          return;
+            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Mixed)            return;
 
-            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo && Config.Item("UseW", true).GetValue<bool>())
-            {
-                W.Cast();
-                Orbwalking.ResetAutoAttackTimer();      // 평타캔슬
-            }
-            else if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear && Config.Item("hW", true).GetValue<bool>() &&
-                     player.ManaPercent > harassmana)
+            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo && g_bWComboEnable)
             {
                 var minions = MinionManager.GetMinions(player.Position, player.AttackRange, MinionTypes.All);
+                // 적군이 2명이상 혹은 주변에 미니언 4마리 이상 (최소한 맞고 튕길 것은 있어야...)
+                if ((ObjectManager.Player.CountEnemiesInRange(Q.Range) > 1) || ((ObjectManager.Player.CountEnemiesInRange(Q.Range/2) == 1) && (minions.Count>3)) )
+                {
+                    W.Cast();
+                    Orbwalking.ResetAutoAttackTimer();      // 평타캔슬
+                }
+            }
+            else if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear && g_bWHarassEnable &&
+                     player.ManaPercent > harassmana)
+            {
+                var minions = MinionManager.GetMinions(player.Position, Q.Range, MinionTypes.All);
                 if (minions == null || minions.Count == 0)
                     return;
 
-                int countMinions = 0;
-                foreach (var minion in minions.Where(minion => minion.Health < player.GetAutoAttackDamage(minion) + W.GetDamage(minion)))
-                    countMinions++;
-
-                // AA 사거리내 미니언이 8마리 이상 있고, AA+W Damage로 죽일 수 있는 미니언이 2마리 이상 있을때 기술 발동
-                if ((minions.Count > 8) && (countMinions>1))
+                // Q 사거리내 미니언이 11마리 이상 있고, AA+W Damage로 죽일 수 있는 미니언이 2마리 이상 있을때 기술 발동
+                if ((minions.Count > 10))
                 {
+                    Entry.PrintChat("Case W: LaneClearMode");
                     W.Cast();
                     Orbwalking.ResetAutoAttackTimer();
                 }
                 
             }
+
         }
         // Cast E
         private void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            // 적 챔피언이 보낸 기술이 아니거나, 타겟이 내가 아니거나, 모르가나 장판이 아닌 경우...
-            if (!E.IsReady() || !sender.IsEnemy || sender.IsMinion || args.Target == null || !args.Target.IsMe || !sender.IsValid<Obj_AI_Hero>() || args.SData.Name == "TormentedSoil")
-                return;
-
-            // 해당 기술의 메뉴가 없거나, Off로 되어 있으면 리턴
-            if (Config.Item("spell" + args.SData.Name) != null && !Config.Item("spell" + args.SData.Name).GetValue<bool>())
-                return;
-
-            var dmg = sender.GetSpellDamage(ObjectManager.Player, args.SData.Name);     // 예상 데미지 예측
-            double HpPercentage = (dmg * 100) / player.Health;                          // 예상 데미지% 예측 
-            //double HpLeft = ObjectManager.Player.Health - dmg;                        // 기술 맞고 남은 HP 계산
-
-            if (HpPercentage >= Config.Item("Edmg", true).GetValue<Slider>().Value &&   // 설정 기술로 받는 데미지가 설정 수준 이상이면 (0이면 무조건 발동): 이거 삭제하자! 막을건지 말건지만 선택하면 됨.
-                sender.IsEnemy && args.Target.IsMe && !args.SData.IsAutoAttack() && 
-                Config.Item("autoE", true).GetValue<bool>())
+            try
             {
-                E.Cast();
+                // 적 챔피언이 보낸 기술이 아니거나, 타겟이 내가 아니거나, 모르가나 장판이 아닌 경우...
+                if (!E.IsReady() || !sender.IsEnemy || sender.IsMinion || args.Target == null || !args.Target.IsMe || !sender.IsValid<Obj_AI_Hero>() || args.SData.Name == "TormentedSoil")
+                    return;
+
+                //Console.WriteLine("Under Attack: '{0}'", args.SData.Name);
+
+                bool bFlag = false;
+                bool bEnable = false;       // 최종 스킬을 사용할지 말지
+                for (var i = 0; i < g_nTotalSpellCnt; i++)
+                    if (nEBlockSpellList[i].strSpellName == args.SData.Name)
+                    {
+                        bFlag = true;
+                        bEnable = nEBlockSpellList[i].bEnable;
+                        break;
+                    }
+
+                if (!bFlag) return;
+
+                var dmg = sender.GetSpellDamage(ObjectManager.Player, args.SData.Name);     // 예상 데미지 예측
+                double HpPercentage = (dmg * 100) / player.Health;                          // 예상 데미지% 예측 
+
+                Entry.PrintChat(string.Format("Spell Attack:{0}({1:F2}) = {2}", args.SData.Name, dmg, bEnable));
+
+                if (HpPercentage >= 0 &&   // 설정 기술로 받는 데미지가 설정 수준 이상이면 (0이면 무조건 발동): 이거 삭제하자! 막을건지 말건지만 선택하면 됨.
+                    sender.IsEnemy && args.Target.IsMe && !args.SData.IsAutoAttack() && bEnable)
+                {
+                    Entry.PrintChat("CastE Sucess:" + args.SData.Name);
+                    Utility.DelayAction.Add(new Random().Next(50, 125), () => E.Cast());    // 휴머나이저 옵션 적용
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Sivir Obj_AI_Base_OnProcessSpellCast Exception '{0}'", e);
             }
         }
+
+        private static T GetItemValue<T>(string item)
+        {
+            return Config.Item(item).GetValue<T>();
+        }
+
+        private static void Refresh_EShiledMenuFlag()
+        {
+            if(bIniEShieldMenu)
+            {
+                for (var i = 0; i < g_nTotalSpellCnt; i++)
+                    nEBlockSpellList[i].bEnable = GetItemValue<bool>("Spell" + nEBlockSpellList[i].strSpellName);
+
+                g_bWComboEnable = GetItemValue<bool>("UseW");
+                g_bWHarassEnable = GetItemValue<bool>("hW");
+            }
+
+        }
+
         private static void Game_OnGameUpdate(EventArgs args)
         {
             if (player.IsDead || MenuGUI.IsChatOpen || player.IsRecalling())
             {
                 return;
             }
+
+            Refresh_EShiledMenuFlag();
 
             switch (Orbwalker.ActiveMode)
             {
@@ -181,6 +292,7 @@ namespace JinxsSupport.Plugins
                     harass();
                     break;
                 case Orbwalking.OrbwalkingMode.LaneClear:
+                    harass();
                     break;
             }
 
@@ -188,39 +300,9 @@ namespace JinxsSupport.Plugins
 
 
         }
+        #endregion
 
-        // For Drawing Function
-        private static float GetComboDamage(Obj_AI_Hero Target)
-        {
-            if (Target != null)
-            {
-                float ComboDamage = new float();
-
-                ComboDamage = Q.IsReady() ? Q.GetDamage(Target) : 0;
-                ComboDamage += W.IsReady() ? W.GetDamage(Target) : 0;
-                ComboDamage += player.TotalAttackDamage;
-                return ComboDamage;
-            }
-            return 0;
-        }
-        // For Drawing Function
-        private static float[] GetLength()
-        {
-            var Target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
-            if (Target != null)
-            {
-                float[] Length =
-                {
-                    GetComboDamage(Target) > Target.Health
-                        ? 0
-                        : (Target.Health - GetComboDamage(Target))/Target.MaxHealth,
-                    Target.Health/Target.MaxHealth
-                };
-                return Length;
-            }
-            return new float[] {0, 0};
-        }
-
+        #region Method/Logic
         // 현재 마나 잔량에 따라 기술조절 하는 구문! from OKTW
         private static void SetMana()
         {
@@ -340,17 +422,19 @@ namespace JinxsSupport.Plugins
 
             if (t.IsValidTarget() & Q.IsReady())
             {
-                // 한번의 시전으로 2명 이상 맞출 수 있으면 기술 시전
-                if (player.CountEnemiesInRange(Q.Range) >= 2)
+                // 한번의 시전으로 2명 이상 맞출 수 있으면 기술 시전, 챔피언이 Q사거리 끝선에 있어 무조건 2번 맞고 내려올 수 있을때
+                if ((player.CountEnemiesInRange(Q.Range) >= 2) && ((t.Distance(player)) >= 950f))
                 {
                     if (QCastOKTW(t, true)) return;
                 }
 
-                // 챔피언이 Q사거리 끝선에 있어 무조건 2번 맞고 내려올 수 있을때
+                /*
+                // 
                 if ((t.Distance(player)) >= 950f)       // 사거리 950f는 튜닝 필요 (Q 사거리 1250f)
                 {
                     if (QCastOKTW(t, false)) return;
                 }
+                */
             }
 
         }
@@ -361,17 +445,52 @@ namespace JinxsSupport.Plugins
             // 1250f 범위내 적군이 2명 이상이고, 1000f 범위내 아군이 3명 이상이면 자동 발동 (그 외에는 수동으로 조작 필요)
             if ((player.CountEnemiesInRange(Q.Range) > 1) && (player.CountAlliesInRange(R.Range) > 2)) R.Cast();
         }
+        #endregion
+
+        #region Drawing
+        // For Drawing Function
+        private static float GetComboDamage(Obj_AI_Hero Target)
+        {
+            if (Target != null)
+            {
+                float ComboDamage = new float();
+
+                ComboDamage = Q.IsReady() ? Q.GetDamage(Target) : 0;
+                ComboDamage += W.IsReady() ? W.GetDamage(Target) : 0;
+                ComboDamage += player.TotalAttackDamage;
+                return ComboDamage;
+            }
+            return 0;
+        }
+        // For Drawing Function
+        private static float[] GetLength()
+        {
+            var Target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
+            if (Target != null)
+            {
+                float[] Length =
+                {
+                    GetComboDamage(Target) > Target.Health
+                        ? 0
+                        : (Target.Health - GetComboDamage(Target))/Target.MaxHealth,
+                    Target.Health/Target.MaxHealth
+                };
+                return Length;
+            }
+            return new float[] { 0, 0 };
+        }
 
         private static void OnDraw(EventArgs args)
         {
             var Target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
-            if (Config.Item("Draw_Disabled").GetValue<bool>())
-                return;
 
+            if (Config.Item("Draw_AA").GetValue<bool>())
+                Render.Circle.DrawCircle(player.Position, player.AttackRange, System.Drawing.Color.White, 1);
             if (Config.Item("Qdraw").GetValue<bool>())
                 Render.Circle.DrawCircle(player.Position, Q.Range, System.Drawing.Color.White, 3);
             if (Config.Item("Rdraw").GetValue<bool>())
                 Render.Circle.DrawCircle(player.Position, R.Range, System.Drawing.Color.White, 3);
+
             if (Config.Item("combodamage").GetValue<bool>() && Q.IsInRange(Target))
             {
                 float[] Positions = GetLength();
@@ -380,10 +499,12 @@ namespace JinxsSupport.Plugins
                         new Vector2(Target.HPBarPosition.X + 10 + Positions[0]*104, Target.HPBarPosition.Y + 20),
                         new Vector2(Target.HPBarPosition.X + 10 + Positions[1]*104, Target.HPBarPosition.Y + 20),
                         9,
-                        Color.DarkRed
+                        Color.GreenYellow
                     );
             }
+
         }
+        #endregion
 
     }
 }
