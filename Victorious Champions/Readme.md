@@ -39,20 +39,38 @@ Supported Champion
  - Q(Stun)/R Cast: OKTW Prediction
  - New Q Stun Logic (Harass/Combo): [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
  - New R Logic (Manual): [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
-6. Sona (WIP)
+7. **Sivir (ADC)**
+ - Origin: JustSivir by Justy (Framework) / OneKeyToWin AIO by Sebby (Logic)
+ - Q Cast: OKTW Prediction
+ - New Q Harss Logic: [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
+ - New R Logic : [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
+8. Sona (WIP)
  - Origin: ElEasy by jQuery
-7. Leona (WIP)
+9. Leona (WIP)
  - Origin: ElEasy by jQuery
 
 
 Version History
 ---
 
+  - [6.3.2.2]
+    - 소라카/나미 Circle Skill Logic (AOE) 개선 (소라카 Q/E, 나미 Q)
+    - **Sivir**
+     - Harass 모드 강화
+        - Q Logic: AOE(멀티타겟) 작동시
+        - Q Logic: 사거리 950 이상에 2타 가능할시
+     - Smart Laneclear (with W Logic)
+        - W Logic: 미니언이 8마리 이상이고, AA+W로 쉽게 정리할 수 있을때 발동
+     - Selectable E Shield
+        - E Logic: 타게팅 기술에 대해 기술 발동 설정 가능 (논타겟은 ezVade에서 동작?)
+     - 보수적이고 제한적인 R Logic
+        - R Logic: Q 사거리내 적군 2명이상, R 사거리내 아군 3명이상이면 자동 발동
+
   - [6.3.1.2]
     - 어셈블리 명칭 변경 (Victorious Support → Victorious Series)
     - 알리스타 QW 콤보 Keybind 변경 (Mixed→Normal "T" Key)
     - 롤 6.3 패치 알리스타 수정 구문 반영
-    - Bard Champion 추가
+    - **Bard 추가**
      - Q 사거리 표시 OnDraw() 추가
      - Q Stun 모드 개선 (OKTW Prediction 기반)
      - Harass 모드시는 Stun 모드로만 동작함.

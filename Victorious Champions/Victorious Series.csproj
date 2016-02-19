@@ -65,6 +65,7 @@
     <Compile Include="Plugins\Leona.cs" />
     <Compile Include="Plugins\Lulu.cs" />
     <Compile Include="Plugins\Nami.cs" />
+    <Compile Include="Plugins\Sivir.cs" />
     <Compile Include="Plugins\Sona.cs" />
     <Compile Include="Plugins\Soraka.cs" />
     <Compile Include="Plugins\Thresh.cs" />
