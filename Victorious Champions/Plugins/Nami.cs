@@ -270,7 +270,7 @@ namespace JinxsSupport.Plugins
             var OKTWPlayer = ObjectManager.Player;
 
             OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = false;
+            bool aoe2 = true;
 
             var predInput2 = new OKTWPrediction.PredictionInput
             {
@@ -289,7 +289,12 @@ namespace JinxsSupport.Plugins
             if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
                 return false;
 
-            if (poutput2.Hitchance >= hitChance)
+            // 단일 타겟일때는 VeryHigh, 다중 타겟을때는 High 기준으로 기술 시전
+            if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
+            {
+                return spell.Cast(poutput2.CastPosition);
+            }
+            else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
             {
                 return spell.Cast(poutput2.CastPosition);
             }
