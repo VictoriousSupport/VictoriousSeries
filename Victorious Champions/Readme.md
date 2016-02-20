@@ -53,8 +53,15 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.2.6]
+    - 시비르 E Shield Logic 수정
+	- 서폿모드시 주변 챔피언에 상관없이 항상 미니언을 치지 않음으로 변경 (C/V Key 용도를 새롭게 하기 위함.)
+	  - Lulu: C Key는 일반 E Harass / V Key는 E+Q Harass
+	  - Alistar: C Key는 WQ 콤보 / V Key 는 QW 콤보
+	  - 일반 Moveto 명령은 휴머나이저가 적용이 되어 있지 않아 사용하기 두려움!
+
   - [6.3.2.4]
-    - 시비르 E Shield Logic 전면 수정 (기술적 한계 극복)
+    - 시비르 E Shield Logic (All New)
     - 시비르 W Logic 수정
     - 시비르 기타 버그 수정
 

@@ -53,11 +53,6 @@ namespace JinxsSupport.Plugins
             _r = new Spell(SpellSlot.R,900);
             _q.SetSkillshot(0.25f, 70, 1450, false, SkillshotType.SkillshotLine);
 
-            //Listen to events
-            Drawing.OnDraw += Drawing_OnDraw;
-            Game.OnUpdate += Game_OnGameUpdate;
-            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
-            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             //print chat as game loaded
             Entry.PrintChat("<font color=\"#FF8844\" >Lulu</font>");
             Entry.PrintChat("Actviator >> Auto Spells >> Config & Help Pix!!");
@@ -85,7 +80,7 @@ namespace JinxsSupport.Plugins
             Harass.AddItem(new MenuItem("QH", "Q (C Key)").SetValue(false));
             Harass.AddItem(new MenuItem("EH", "E (C Key)").SetValue(true));
             Harass.AddItem(new MenuItem("QEH", "E+Q (V Key)").SetValue(true));
-            Harass.AddItem(new MenuItem("ManaH", "Min Mana Harass").SetValue(new Slider(40, 0, 100)));
+            Harass.AddItem(new MenuItem("ManaH", "Min. Mana").SetValue(new Slider(40, 0, 100)));
             
             //combo 
             Menu Combo = spellMenu.AddSubMenu(new Menu("Combo", "Combo"));
@@ -113,18 +108,21 @@ namespace JinxsSupport.Plugins
             Draw.AddItem(new MenuItem("DR", "Draw R").SetValue(false));
             Draw.AddItem(new MenuItem("DEQ", "Draw E + Q").SetValue(false));
             Draw.AddItem(new MenuItem("DPIX", "Draw Pix").SetValue(true));
-            Draw.AddItem(new MenuItem("DStatus", "Draw Status").SetValue(true));
+            //Draw.AddItem(new MenuItem("DStatus", "Draw Status").SetValue(true));
 
             // W:Polymorph (적군 원딜/정글)
             Menu Wcombo = _menu.AddSubMenu(new Menu("Polymorph | W", "W"));
-            Wcombo.AddItem(new MenuItem("WC", "[Enable]").SetValue(true));
             foreach (var hero in HeroManager.Enemies)
-            {
                 Wcombo.AddItem(new MenuItem("WC" + hero.ChampionName, hero.ChampionName).SetValue(true));
-            }
 
             //Attach to root
             _menu.AddToMainMenu();
+
+            //Listen to events
+            Game.OnUpdate += Game_OnGameUpdate;
+            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
+            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Drawing.OnDraw += Drawing_OnDraw;
         }
         #endregion
          
@@ -155,9 +153,10 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        public static void Drawing_OnDraw (EventArgs args)
+        public static void Drawing_OnDraw(EventArgs args)
         {
             if (Player.IsDead) return;
+
             if (_menu.Item("DQ").GetValue<bool>())
                 Render.Circle.DrawCircle(Player.Position, _q.Range, Color.Aqua, 3);
             if (_menu.Item("DW").GetValue<bool>())
@@ -168,10 +167,11 @@ namespace JinxsSupport.Plugins
                 Render.Circle.DrawCircle(Player.Position, _r.Range, Color.Violet);
             if (_menu.Item("DEQ").GetValue<bool>())
                 Render.Circle.DrawCircle(Player.Position, _q.Range + _e.Range, Color.YellowGreen);
-            if (_menu.Item("DPIX").GetValue<bool>())
+            if (_menu.Item("DPIX").GetValue<bool>() && pix != null) 
                 Render.Circle.DrawCircle(pix.Position + new Vector3(0, 0, 15), 75, Color.Yellow, 5, true);
 
         }
+
         public static void Game_OnGameUpdate (EventArgs args)
         {
             Getpixed();             // set value for pix
@@ -183,15 +183,12 @@ namespace JinxsSupport.Plugins
             if (_orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear)
                 Harass2();           // E+Q 견제용! (V Key: EQ 사용)
 
-            if (_menu.Item("SafeKey", true).GetValue<KeyBind>().Active)
-            {
-                SafetyKey();
-            }
+            if (_menu.Item("SafeKey", true).GetValue<KeyBind>().Active) SafetyKey();
 
         }
 
         /// <summary>
-        /// OKTW Q 함수, Q1/Q2 기술을 다르게 처리 
+        /// OKTW Q 함수
         /// </summary>
         public static bool QCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
         {
@@ -263,21 +260,6 @@ namespace JinxsSupport.Plugins
             #endregion
 
             #endregion
-
-            #region Auto R Cast 구문: 단순 체력비례 용도로는 사용되지 않음. 만약 굳히 쓴다면 Activator 사용함.
-            /*
-            if (_r.IsReady() && _menu.Item("AR").GetValue<bool>())
-            {
-                foreach (var hero in HeroManager.Allies.Where(x => x.IsValidTarget(_r.Range, false) && _menu.Item("R" + x.ChampionName).GetValue<bool>()))
-                {
-                    if (hero.Health * 100 / hero.MaxHealth <=  _menu.Item("HPR").GetValue<Slider>().Value
-                        && hero.CountEnemiesInRange(900) >= 1)
-                        _r.Cast(hero);
-                }
-            }
-            */
-            #endregion
-
         }
 
         public static void PixEQCombo(bool useE = true)
@@ -292,8 +274,8 @@ namespace JinxsSupport.Plugins
 
             var pixTargetEffectiveHealth = pixTarget != null ? pixTarget.Health * (1 + pixTarget.SpellBlock / 100f) : float.MaxValue;
             var luluTargetEffectiveHealth = luluTarget != null ? luluTarget.Health * (1 + luluTarget.SpellBlock / 100f) : float.MaxValue;
-            
-            var target = pixTargetEffectiveHealth * 1.2f > luluTargetEffectiveHealth ? luluTarget : pixTarget;
+            var target = pixTargetEffectiveHealth * 1.2f > luluTargetEffectiveHealth ? luluTarget : pixTarget;          // HP를 가지고 타겟을 정하나?
+
             var bflag = false;
             Spell.CastStates qCastState = Spell.CastStates.OutOfRange;
 
@@ -302,11 +284,12 @@ namespace JinxsSupport.Plugins
             {
                 var distanceToTargetFromPlayer = Player.Distance(target, true);
                 var distanceToTargetFromPix = pix != null ? pix.Distance(target, true) : float.MaxValue;
-                var source = pix == null ? Player : (distanceToTargetFromPix < distanceToTargetFromPlayer ? pix : Player);
+                var source = pix == null ? Player : (distanceToTargetFromPix < distanceToTargetFromPlayer ? pix : Player);      // Pix 타겟에 더 가까우면
 
                 _q.From = source.ServerPosition;
                 _q.RangeCheckFrom = source.ServerPosition;
 
+                // E가 준비되지 않거나, 사거리내 있으면... 일단 시전
                 if (!useE || !_e.IsReady() || _q.From.Distance(target.ServerPosition) < _q.Range - 100)
                 {
                     qCastState = _q.Cast(target);
@@ -314,7 +297,7 @@ namespace JinxsSupport.Plugins
                 bflag = true;
             }
 
-            // 만약 Q 사거리내에 적이 없으면 확장 사거리를 찾는다.
+            // 일단 했으나, 결과가 사거리 밖이라는 표식이 뜨면... 혹은 타겟이 Null 이면
             if (qCastState == Spell.CastStates.OutOfRange)
             {
                 if (useE && _e.IsReady())
@@ -322,10 +305,11 @@ namespace JinxsSupport.Plugins
                     var eqTarget = TargetSelector.GetTarget(_q.Range + _e.Range, TargetSelector.DamageType.Magical);
                     if (eqTarget != null)
                     {
+                        // E Range 안에 있는 적에게 일단 E Cast
                         var eTarget =
                             ObjectManager.Get<Obj_AI_Base>()
                                 .Where(t => t.IsValidTarget(_e.Range) && t.Distance(eqTarget, true) < _q.RangeSqr && !_e.IsKillable(eqTarget)).MinOrDefault(t => t.Distance(eqTarget, true));
-                        if (eTarget != null)
+                        if (eTarget != null && _q.IsReady())
                         {
                             _e.Cast(eTarget);
                             return;
@@ -364,12 +348,12 @@ namespace JinxsSupport.Plugins
             #region Cast: W
             // W 스킬은 메뉴에서 지정이 되어 있어야 하고, 또한 타게팅이 되어 있어야 함.
             // 타게팅은 기본설정을 따라가게 되고, 미리 클릭해서 설정해놓으면 됨. (정글링 대응)
-            if (_w.IsReady() && _menu.Item("WC").GetValue<bool>())
+            if (_w.IsReady())
             {
                 var target = TargetSelector.GetTarget(_w.Range, TargetSelector.DamageType.Magical);
                 foreach (var hero in HeroManager.Enemies.Where(x => x.IsValidTarget(_w.Range) && _menu.Item("WC" + x.ChampionName).GetValue<bool>()))
                 {
-                    if((target == hero)&&_w.CanCast(hero))
+                    if ((target == hero) && _w.CanCast(hero))
                     {
                         _w.CastOnUnit(hero);
                     }

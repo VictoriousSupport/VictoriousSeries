@@ -43,11 +43,6 @@ namespace JinxsSupport.Plugins
             spells[SpellSlot.Q].SetSkillshot(0.25f, 65f, 1600f, false, SkillshotType.SkillshotLine);
             spells[SpellSlot.R].SetSkillshot(0.5f, 325, 1800, false, SkillshotType.SkillshotCircle);
 
-            Game.OnUpdate += Game_OnUpdate;
-            GameObject.OnCreate += OnCreate;
-            GameObject.OnDelete += OnDelete;
-            Drawing.OnDraw += OnDraw;                       // by Jinx
-
             Entry.PrintChat("<font color=\"#FFCC66\" >Bard</font>");
         }
         #endregion
@@ -70,7 +65,7 @@ namespace JinxsSupport.Plugins
                 comboMenu.AddItem(new MenuItem("dz191.bard.combo.useq", "Use Q").SetValue(true));
                 comboMenu.AddItem(new MenuItem("dz191.bard.combo.usew", "Use W").SetValue(true));
 
-                comboMenu.AddItem(new MenuItem("dz191.bard.combo.user", "R Manual Cast").SetValue(new KeyBind('N', KeyBindType.Press)));
+                comboMenu.AddItem(new MenuItem("dz191.bard.combo.user", "R Manual Cast").SetValue(new KeyBind('B', KeyBindType.Press)));
                 comboMenu.AddItem(new MenuItem("dz191.bard.combo.usercount", "Enemies for R").SetValue(new Slider(2, 5, 1)));
 
                 BardMenu.AddSubMenu(comboMenu);
@@ -119,8 +114,12 @@ namespace JinxsSupport.Plugins
                 BardMenu.AddSubMenu(miscMenu);
             }
 
-
             BardMenu.AddToMainMenu();
+
+            Game.OnUpdate += Game_OnUpdate;
+            GameObject.OnCreate += OnCreate;
+            GameObject.OnDelete += OnDelete;
+            Drawing.OnDraw += OnDraw;                       // by Jinx
         }
         #endregion
 
@@ -204,6 +203,7 @@ namespace JinxsSupport.Plugins
                 Unit = target,
                 Type = CoreType2
             };
+
             var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
 
             if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
@@ -520,15 +520,6 @@ namespace JinxsSupport.Plugins
                 }
 
                 if (GetItemValue<bool>("dz191.bard.mixed.useq")) DrawCheckWall();           // Q Stun Harras
-
-                /*
-                if (GetItemValue<KeyBind>("dz191.bard.flee.flee").Active)                   // E Cast Route
-                {
-                    Render.Circle.DrawCircle(GetFirstWallPoint(ObjectManager.Player.ServerPosition, Game.CursorPos), 100, System.Drawing.Color.Green, 10);
-                    Render.Circle.DrawCircle(Game.CursorPos, 100, System.Drawing.Color.Green, 10);
-                    drawLine(GetFirstWallPoint(ObjectManager.Player.ServerPosition, Game.CursorPos), Game.CursorPos, 5, System.Drawing.Color.Yellow);
-                }
-                */
 
             }
             catch (Exception exception)

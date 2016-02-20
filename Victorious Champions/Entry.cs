@@ -152,11 +152,7 @@ namespace JinxsSupport
 
                 if (args.Target.Type == GameObjectType.obj_AI_Minion)
                 {
-                    var alliesinrange = HeroManager.Allies.Count(x => !x.IsMe && x.Distance(Player) <= 1500);
-                    if (alliesinrange > 0)
-                    {
-                        args.Process = false;
-                    }
+                    args.Process = false;
                 }
             }
         }

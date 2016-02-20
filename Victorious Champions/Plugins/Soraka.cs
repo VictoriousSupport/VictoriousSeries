@@ -118,12 +118,6 @@ namespace JinxsSupport.Plugins
             Q.SetSkillshot(0.3f, 160, 1600, false, SkillshotType.SkillshotCircle);
             E.SetSkillshot(0.5f, 70f, 1600, false, SkillshotType.SkillshotCircle);
 
-            Interrupter2.OnInterruptableTarget += InterrupterOnOnPossibleToInterrupt;
-            AntiGapcloser.OnEnemyGapcloser += AntiGapcloserOnOnEnemyGapcloser;
-            Game.OnUpdate += GameOnOnGameUpdate;
-            Drawing.OnDraw += DrawingOnOnDraw;
-
-
             Entry.PrintChat("<font color=\"#66CCFF\" >Soraka</font>");
         }
         #endregion
@@ -199,6 +193,12 @@ namespace JinxsSupport.Plugins
             }
 
             Menu.AddToMainMenu();
+
+            Interrupter2.OnInterruptableTarget += InterrupterOnOnPossibleToInterrupt;
+            AntiGapcloser.OnEnemyGapcloser += AntiGapcloserOnOnEnemyGapcloser;
+            Game.OnUpdate += GameOnOnGameUpdate;
+            Drawing.OnDraw += DrawingOnOnDraw;
+
         }
         #endregion
 

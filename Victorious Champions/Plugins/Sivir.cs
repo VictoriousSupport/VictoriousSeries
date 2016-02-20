@@ -55,14 +55,7 @@ namespace JinxsSupport.Plugins
             g_bWHarassEnable = true;
             g_nTotalSpellCnt = 0;
 
-            Drawing.OnDraw += OnDraw;
-            Game.OnUpdate += Game_OnGameUpdate;                                 // Q/R Logic for Combo / Harass Mode
-            Orbwalking.AfterAttack += Orbwalking_OnAfterAttack;                 // W Logic
-            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;   // Cast E 발동조건
-
             Entry.PrintChat("<font color=\"#66CCFF\" >Sivir</font>");
-            Entry.PrintChat("<font color=\"#FFFFFF\" >Turn off ezVade SivirE (E) Use</font>");
-            Entry.PrintChat("<font color=\"#FFFFFF\" >Enemies's Unit Spells(Targeting Skill) are enabled basically(*).</font>");
         }
         #endregion
 
@@ -154,6 +147,11 @@ namespace JinxsSupport.Plugins
 
             Config.AddToMainMenu();
 
+            Drawing.OnDraw += OnDraw;
+            Game.OnUpdate += Game_OnGameUpdate;                                 // Q/R Logic for Combo / Harass Mode
+            Orbwalking.AfterAttack += Orbwalking_OnAfterAttack;                 // W Logic
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;   // Cast E 발동조건
+
         }
         #endregion
 
@@ -217,7 +215,7 @@ namespace JinxsSupport.Plugins
         {
             try
             {
-                // 적 챔피언이 보낸 기술이 아니거나, 타겟이 내가 아니거나, 모르가나 장판이 아닌 경우...
+                // 적 챔피언이 보낸 기술이 아니거나, 타겟이 내가 아니거나... 논타겟 기술이면 아래 조건문을 빠져나갈 수 없음.
                 if (!E.IsReady() || !sender.IsEnemy || sender.IsMinion || args.Target == null || !args.Target.IsMe || !sender.IsValid<Obj_AI_Hero>() || args.SData.Name == "TormentedSoil")
                     return;
 
@@ -238,13 +236,17 @@ namespace JinxsSupport.Plugins
                 var dmg = sender.GetSpellDamage(ObjectManager.Player, args.SData.Name);     // 예상 데미지 예측
                 double HpPercentage = (dmg * 100) / player.Health;                          // 예상 데미지% 예측 
 
-                Entry.PrintChat(string.Format("Spell Attack:{0}({1:F2}) = {2}", args.SData.Name, dmg, bEnable));
+                Entry.PrintChat(string.Format("Spell Attack:{0}({1:F2}%) = {2}", args.SData.Name, HpPercentage, bEnable));
 
-                if (HpPercentage >= 0 &&   // 설정 기술로 받는 데미지가 설정 수준 이상이면 (0이면 무조건 발동): 이거 삭제하자! 막을건지 말건지만 선택하면 됨.
-                    sender.IsEnemy && args.Target.IsMe && !args.SData.IsAutoAttack() && bEnable)
+                if (HpPercentage >= 35 && args.SData.IsAutoAttack())
                 {
-                    Entry.PrintChat("CastE Sucess:" + args.SData.Name);
-                    Utility.DelayAction.Add(new Random().Next(50, 125), () => E.Cast());    // 휴머나이저 옵션 적용
+                    Entry.PrintChat("CastE AA Sucess:" + args.SData.Name);                  // 나를 대상으로 하는 AA 데미지가 HP의 35%가 넘는 스킬은 일단 무조건 막고 보자
+                    Utility.DelayAction.Add(new Random().Next(50, 125), () => E.Cast());    
+                }
+                else if (HpPercentage >= 0 && !args.SData.IsAutoAttack() && bEnable)
+                {
+                    Entry.PrintChat("CastE Sucess:" + args.SData.Name);                     // 이미 지정된 기술인 경우 무조건 방어 (데미지는 없고 CC만 걸리는 기술도 있음.)
+                    Utility.DelayAction.Add(new Random().Next(50, 125), () => E.Cast());    
                 }
             }
             catch (Exception e)
@@ -263,7 +265,7 @@ namespace JinxsSupport.Plugins
             if(bIniEShieldMenu)
             {
                 for (var i = 0; i < g_nTotalSpellCnt; i++)
-                    nEBlockSpellList[i].bEnable = GetItemValue<bool>("Spell" + nEBlockSpellList[i].strSpellName);
+                   nEBlockSpellList[i].bEnable = GetItemValue<bool>("Spell" + nEBlockSpellList[i].strSpellName);
 
                 g_bWComboEnable = GetItemValue<bool>("UseW");
                 g_bWHarassEnable = GetItemValue<bool>("hW");
@@ -485,7 +487,7 @@ namespace JinxsSupport.Plugins
             var Target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
 
             if (Config.Item("Draw_AA").GetValue<bool>())
-                Render.Circle.DrawCircle(player.Position, player.AttackRange, System.Drawing.Color.White, 1);
+                Render.Circle.DrawCircle(player.Position, player.AttackRange + player.BoundingRadius, System.Drawing.Color.White, 1);
             if (Config.Item("Qdraw").GetValue<bool>())
                 Render.Circle.DrawCircle(player.Position, Q.Range, System.Drawing.Color.White, 3);
             if (Config.Item("Rdraw").GetValue<bool>())

@@ -48,20 +48,6 @@ namespace JinxsSupport.Plugins
         {
             if (Player.ChampionName != "Thresh")
                 return;
-            /*
-            menu = new Menu("Support Mode", "SupportMode", true);
-            menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(true)).Permashow(true, "Support Mode");
-            menu.AddToMainMenu();
-            Orbwalking.BeforeAttack += BeforeAttack;      // 이 부분은 AIO Support Mode와 통합할 필요가 있음.
-            */
-
-            Game.OnUpdate += Game_OnUpdate;
-            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
-            Drawing.OnDraw += Drawing_OnDraw;
-            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
-            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
-            Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
-            EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
 
             Entry.PrintChat("<font color=\"#FFCC66\" >Thresh</font>");
         }
@@ -206,6 +192,15 @@ namespace JinxsSupport.Plugins
             config.Item("SafeLanternKey", true).Permashow(config.IsBool("PermaShow"), "Safe Lantern", SharpDX.Color.Aquamarine);
 
             config.AddToMainMenu();
+
+            Game.OnUpdate += Game_OnUpdate;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Drawing.OnDraw += Drawing_OnDraw;
+            AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
+            Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
+            Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
+            EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
+
         }
         #endregion
 

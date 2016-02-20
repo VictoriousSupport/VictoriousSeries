@@ -134,12 +134,12 @@ namespace JinxsSupport.Plugins
                 R = new Spell(SpellSlot.R);
 
                 Game.OnUpdate += OnUpdate;
-                Drawing.OnDraw += OnDraw;
                 AttackableUnit.OnDamage += AttackableUnit_OnDamage;
                 Interrupter2.OnInterruptableTarget += OnInterruptableTarget;
                 AntiGapcloser.OnEnemyGapcloser += OnEnemyGapcloser;
 
                 Entry.PrintChat("<font color=\"#FFCC66\" >Alistar</font>");
+                Entry.PrintChat("<font color=\"#FFFFFF\" >C Key: WQ Harass / V Key: QW Combo (GapCloser)</font>");
             }
             catch (Exception exception)
             {
@@ -182,12 +182,9 @@ namespace JinxsSupport.Plugins
 
                 var flashMenu = new Menu("QW Combo Auto Key", "Flash");
                 {
-                    flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo", "QW Custom Combo").SetValue(true));
+                    flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo", "QW Custom Combo (V Key)").SetValue(true));
                     flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo.Range", "QW Combo Start Range").SetValue(new Slider(320, 250, 350)));    // new by Jinx
                     flashMenu.AddItem(new MenuItem("ElAlistar.QW.Combo.Delay", "Q -> W Delay").SetValue(new Slider(400, 200, 800)));           // new by Jinx
-                    flashMenu.AddItem(
-                    new MenuItem("ElAlistar.Combo.QWkey", "QW HotKey").SetValue(
-                        new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
                 }
 
                 Menu.AddSubMenu(flashMenu);
@@ -228,6 +225,7 @@ namespace JinxsSupport.Plugins
 
                 Menu.AddSubMenu(miscellaneousMenu);
                 Menu.AddToMainMenu();
+                Drawing.OnDraw += OnDraw;
             }
             catch (Exception exception)
             {
@@ -334,55 +332,17 @@ namespace JinxsSupport.Plugins
             {
                 var target = TargetSelector.GetTarget(W.Range, TargetSelector.DamageType.Magical);
                 if (target == null)
-                {
                     return;
-                }
 
-                // WQ 콤보
-                if (IsActive("ElAlistar.Combo.Q") && IsActive("ElAlistar.Combo.W") && Q.IsReady() && W.IsReady())
-                {
-                    if (target.IsValidTarget(W.Range) && HasEnoughMana())
-                    {
-                        // 만약 Q 사거리 안에 있으면 그냥 Q 날리고 맘.
-                        if (target.IsValidTarget(Q.Range))
-                        {
-                            Q.Cast();
-                            return;
-                        }
-
-                        if (W.Cast(target).IsCasted())
-                        {
-                            /* 6.2 패치까지 쿵쾅콤보
-                            var comboTime = Math.Max(0, Player.Distance(target) - 365) / 1.2f - 25;
-                            Utility.DelayAction.Add((int)comboTime, () => Q.Cast());
-                            */
-                            /// 6.3 패치: 쿵쾅콤보 로직
-                            if (Player.Distance(target) > 150)
-                            {
-                                Utility.DelayAction.Add(50, () => Q.Cast());
-                                // 150의 거리를 1200의 투사체 속도로 날아가므로, 도달까지 약 125ms 필요, 네트워크 핑지연 포함하더라도 50ms 지연후 Q 발동하면 쿵쾅콤보 성공
-                            }
-                            else
-                            {
-                                if(Q.IsReady()) Q.Cast();
-                                // 그 이하 거리면 그냥 바로 시전
-                            }
-                        }
-                    }
-                }
+                WQCombo();
 
                 if (IsActive("ElAlistar.Combo.Q") && target.IsValidTarget(Q.Range))
-                {
                     Q.Cast();
-                }
 
                 if (IsActive("ElAlistar.Combo.W"))
-                {
                     if (target.IsValidTarget(W.Range) && W.GetDamage(target) > target.Health)
-                    {
                         W.Cast(target);
-                    }
-                }
+
             }
             catch (Exception exception)
             {
@@ -492,13 +452,13 @@ namespace JinxsSupport.Plugins
                     case Orbwalking.OrbwalkingMode.Combo:
                         OnCombo();
                         break;
+                    case Orbwalking.OrbwalkingMode.Mixed:
+                        WQCombo();
+                        break;
+                    case Orbwalking.OrbwalkingMode.LaneClear:
+                        QWCombo();
+                        break;
                 }
-
-                if (Menu.Item("ElAlistar.Combo.QWkey").GetValue<KeyBind>().Active)
-                {
-                    QWCombo();
-                }
-
             }
             catch (Exception exception)
             {
@@ -506,10 +466,51 @@ namespace JinxsSupport.Plugins
             }
         }
 
+        private static void WQCombo()
+        {
+            if (!Q.IsReady() && !W.IsReady()) return;
+
+            // WQ 콤보
+            if (IsActive("ElAlistar.Combo.Q") && IsActive("ElAlistar.Combo.W"))
+            {
+                var target = TargetSelector.GetTarget(W.Range, TargetSelector.DamageType.Magical);
+                if (target == null) return;
+
+                if (target.IsValidTarget(W.Range) && HasEnoughMana())
+                {
+                    // 만약 Q 사거리 안에 있으면 그냥 Q 날리고 맘.
+                    if (target.IsValidTarget(Q.Range))
+                    {
+                        Q.Cast();
+                        return;
+                    }
+
+                    if (W.Cast(target).IsCasted())
+                    {
+                        /* 6.2 패치까지 쿵쾅콤보
+                        var comboTime = Math.Max(0, Player.Distance(target) - 365) / 1.2f - 25;
+                        Utility.DelayAction.Add((int)comboTime, () => Q.Cast());
+                        */
+                        /// 6.3 패치: 쿵쾅콤보 로직
+                        if (Player.Distance(target) > 150)
+                        {
+                            Utility.DelayAction.Add(50, () => Q.Cast());
+                            // 150의 거리를 1200의 투사체 속도로 날아가므로, 도달까지 약 125ms 필요, 네트워크 핑지연 포함하더라도 50ms 지연후 Q 발동하면 쿵쾅콤보 성공
+                        }
+                        else
+                        {
+                            if (Q.IsReady()) Q.Cast();
+                            // 그 이하 거리면 그냥 바로 시전
+                        }
+                    }
+                }
+            }
+        }
+
         private static void QWCombo()
         {
 
-            Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);  // 일단 커서 방향으로 움직임
+            //Player.IssueOrder(GameObjectOrder.MoveTo, Game.CursorPos);  // 일단 커서 방향으로 움직임
             if (!Q.IsReady() && !W.IsReady()) return;
 
             // 단축키(T) 눌렸을때 QW 순차적 발동, Q가 발동되면 x msec 안에 이동한 반대방향으로 던짐
