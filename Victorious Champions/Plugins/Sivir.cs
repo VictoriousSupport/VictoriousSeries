@@ -105,7 +105,7 @@ namespace JinxsSupport.Plugins
                 bool EnableE = false;
                 bool EnableR = false;
 
-                if (spellQ.SData.TargettingType == SpellDataTargetType.Unit)
+                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableQ = true;
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} (*)", spellQ.Name)).SetValue(EnableQ));
@@ -113,7 +113,7 @@ namespace JinxsSupport.Plugins
                 else
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)).SetValue(EnableQ));
 
-                if (spellW.SData.TargettingType == SpellDataTargetType.Unit)
+                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableW = true;
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} (*)", spellW.Name)).SetValue(EnableW));
@@ -121,7 +121,7 @@ namespace JinxsSupport.Plugins
                 else
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)).SetValue(EnableW));
 
-                if (spellE.SData.TargettingType == SpellDataTargetType.Unit)
+                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableE = true;
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} (*)", spellE.Name)).SetValue(EnableE));
@@ -129,7 +129,7 @@ namespace JinxsSupport.Plugins
                 else
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)).SetValue(EnableE));
 
-                if (spellR.SData.TargettingType == SpellDataTargetType.Unit)
+                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableR = true;
                     Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} (*)", spellR.Name)).SetValue(EnableR));
@@ -234,11 +234,11 @@ namespace JinxsSupport.Plugins
                 if (!bFlag) return;
 
                 var dmg = sender.GetSpellDamage(ObjectManager.Player, args.SData.Name);     // 예상 데미지 예측
-                double HpPercentage = (dmg * 100) / player.Health;                          // 예상 데미지% 예측 
+                double HpPercentage = (dmg * 100) / player.MaxHealth;                          // 예상 데미지% 예측 
 
-                Entry.PrintChat(string.Format("Spell Attack:{0}({1:F2}%) = {2}", args.SData.Name, HpPercentage, bEnable));
+                Entry.PrintChat(string.Format("Spell Attack:{0}({1:F2}) = {2}", args.SData.Name, HpPercentage, bEnable));
 
-                if (HpPercentage >= 35 && args.SData.IsAutoAttack())
+                if (HpPercentage >= 30 && args.SData.IsAutoAttack())
                 {
                     Entry.PrintChat("CastE AA Sucess:" + args.SData.Name);                  // 나를 대상으로 하는 AA 데미지가 HP의 35%가 넘는 스킬은 일단 무조건 막고 보자
                     Utility.DelayAction.Add(new Random().Next(50, 125), () => E.Cast());    

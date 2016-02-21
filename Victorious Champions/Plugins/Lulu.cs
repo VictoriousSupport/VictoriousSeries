@@ -39,6 +39,48 @@ namespace JinxsSupport.Plugins
         private static Menu _menu;
         private static Obj_AI_Base pix;
 
+        private static bool g_bIniEShieldMenu = false;      // Eshield Menu Configure Flag
+        private static bool g_bPassiveModeE = false;        // Lulu Passive Mode
+        private static int g_nDamagePercent;                // Dagame % for Defence
+        private static int g_nDamageCritical;               // Critical Damage
+        private static int g_nMyADCDamagePercent;           // My ADC Damage % for Defence
+        private static string g_strMyADC = null;
+
+        private static string[] Spells =
+        {
+            "drain","consume","absolutezero", "staticfield","jinxr","shenstandunited","threshe","threshrpenta", "volibearqattack",
+            "cassiopeiapetrifyinggaze","galioidolofdurand", "infiniteduress","lucianq","velkozr","rocketgrabmissile",
+
+            "ezrealtrueshotbarrage",        // 이즈리얼 R
+            "ReapTheWhirlwind",             // 잔나 W
+            "luxmalicecannon",              // 럭스 R
+            "missfortunebullettime",        // 미포 R
+            "caitlynaceinthehole",          // 케이틀린 R
+            "brandwildfire",                // 브랜드 R
+            "monkeykingspintowin",          // 오공 R
+            "garenr",                       // 가렌 R
+            "goldcardpreattack",            // 트페 골드카드
+            "nocturneUnspeakablehorror",    // 녹턴 E
+            "katarinar",                    // 카타리나 R
+            "skarnerimpale",                // 스카너 R
+            "bustershot",                   // 트타 R
+            "trundlePain",                  // 트런들 R
+            "vir",                          // 바이 R
+            "InfiniteDuress",               // 워윅 R
+            "ZedR",                         // 제드 R
+            "Terrify",                      // 피들스틱 Q
+            "BlindMonkRKick",               // 리신 R
+            "LissandraR",                   // 리산드라 R
+            "MordekaiserChildrenOfTheGrave",// 모데카이저 R
+            "InfernalGuardian",             // 애니 R
+            "BraumR",                       // 브라움 R
+            "FizzMarinerDoomMissile",       // 피즈 R
+            "UFSlash",                      // 말파이트 R
+            "AlZaharNetherGrasp",           // 말자하 R
+            "NamiR",                        // 나미 R
+            "NautilusGrandLine"             // 노틸러스 R
+        };
+
         #region Load() Function
         public void Load()
         {
@@ -115,17 +157,131 @@ namespace JinxsSupport.Plugins
             foreach (var hero in HeroManager.Enemies)
                 Wcombo.AddItem(new MenuItem("WC" + hero.ChampionName, hero.ChampionName).SetValue(true));
 
+            // Passive Mode (자기방어 모드/모든 E Shield를 나에게만 사용하는 모드)
+            Menu PassiveMode = _menu.AddSubMenu(new Menu("Passive Mode | E", "PassiveModeE"));
+
+            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.Enable", "Self-Defence Enable").SetValue(new KeyBind("N".ToCharArray()[0], KeyBindType.Toggle, false)));
+            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.Critical", "Critical Threshold HP(%)").SetValue(new Slider(10, 0, 30)));
+            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.DamageP", "Damage > My HP(%)").SetValue(new Slider(4, 0, 30)));
+
+            var MyADCMenu = new Menu("My ADC (Select One)", "SelectMyADC");
+            {
+                MyADCMenu.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.DamageADC", "Damage > Ally HP(%)").SetValue(new Slider(8, 0, 30)));
+                foreach (var ally in ObjectManager.Get<Obj_AI_Hero>().Where(h => h.IsAlly && !h.IsMe))
+                {
+                    var championName = ally.CharData.BaseSkinName;
+                    MyADCMenu.AddItem(new MenuItem("HelpPix" + championName, "Help Pix:" + championName).SetValue(false));
+                }
+            }
+            PassiveMode.AddSubMenu(MyADCMenu);
+
+            var MyEnemySpellBook = new Menu("Enemy Spell Book", "EnemySpellBook");
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+            {
+                var spellQ = enemy.Spellbook.Spells[0];
+                var spellW = enemy.Spellbook.Spells[1];
+                var spellE = enemy.Spellbook.Spells[2];
+                var spellR = enemy.Spellbook.Spells[3];
+
+                MyEnemySpellBook.SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)));
+                MyEnemySpellBook.SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)));
+                MyEnemySpellBook.SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)));
+                MyEnemySpellBook.SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} ({1})", spellR.Name, spellR.SData.TargettingType)));
+            }
+            PassiveMode.AddSubMenu(MyEnemySpellBook);
+
             //Attach to root
             _menu.AddToMainMenu();
+
+            g_bIniEShieldMenu = true;
 
             //Listen to events
             Game.OnUpdate += Game_OnGameUpdate;
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             Drawing.OnDraw += Drawing_OnDraw;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;   // 6.3.2.7
         }
         #endregion
-         
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            bool bCriticalSpell = false;
+            if ( !sender.IsEnemy || sender.IsMinion || !sender.IsValid<Obj_AI_Hero>() || Player.Distance(sender.ServerPosition) > 3340) return;
+
+            var foundSpell = Spells.Find(x => args.SData.Name.ToLower() == x.ToLower());
+            if (foundSpell != null)
+            {
+                Entry.PrintChat(string.Format("<font color=\"#FFAA00\" >Critical Skill ({0})!!!!!!</font>", args.SData.Name));
+                bCriticalSpell = true;
+            }
+
+            if (bCriticalSpell && _e.IsReady())
+            {
+                //foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range && (ally.CharData.BaseSkinName == g_strMyADC || ally.IsMe)))
+                foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range ))
+                {
+                    if (args.Target != null && args.Target.NetworkId == ally.NetworkId)
+                    {
+                        Entry.PrintChat(string.Format("Critical Shield (Targeted) = {0}/{1}", args.SData.Name, ally.CharData.BaseSkinName));
+                        _e.CastOnUnit(ally);
+                        return;
+                    }
+                    else
+                    {
+                        var castArea = ally.Distance(args.End) * (args.End - ally.ServerPosition).Normalized() + ally.ServerPosition;
+                        if (castArea.Distance(ally.ServerPosition) > ally.BoundingRadius / 2)
+                            continue;
+
+                        Entry.PrintChat(string.Format("Critical Shield (Location) = {0}/{1}", args.SData.Name, ally.CharData.BaseSkinName));
+                        _e.CastOnUnit(ally);
+                        return;
+                    }
+                }
+            }
+                
+            ////g_nDamageCritical, g_nMyADCDamagePercent
+            if (args.Target.IsMe)
+            {
+                var dmg = sender.GetSpellDamage(Player, args.SData.Name);     // 예상 데미지
+                double HpPercentage = (dmg * 100) / Player.MaxHealth;         // 예상 데미지% (전체HP)
+
+                Entry.PrintChat(string.Format("{0}({1}): {2:F2}/{3}({4})", args.SData.Name, args.SData.TargettingType, HpPercentage, g_nDamagePercent, _e.IsReady()));
+
+                if (!g_bPassiveModeE || !_e.IsReady()) return;
+
+                if (HpPercentage > g_nDamageCritical)
+                {
+                    Entry.PrintChat(string.Format("Help Pix Lulu! High Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamageCritical, args.SData.Name));
+                    _e.CastOnUnit(Player);
+                }
+                else if (HpPercentage > g_nDamagePercent)
+                {
+                    Entry.PrintChat(string.Format("Help Pix Lulu! Normal Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamagePercent, args.SData.Name));
+                    _e.CastOnUnit(Player);
+                }
+            }
+            else if (args.Target.IsAlly && args.Target.IsValid<Obj_AI_Hero>() && !string.IsNullOrEmpty(g_strMyADC))
+            {
+                var MyADC = HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range).Find(ally => ally.CharData.BaseSkinName == g_strMyADC);
+
+                var dmg = sender.GetSpellDamage(MyADC, args.SData.Name);     // 예상 데미지
+                double HpPercentage = (dmg * 100) / MyADC.MaxHealth;         // 예상 데미지% (전체HP)
+
+                Entry.PrintChat(string.Format("{0}: {1:F2}/{2}({3})", MyADC.CharData.BaseSkinName, HpPercentage, g_nMyADCDamagePercent, _e.IsReady()));
+
+                if (MyADC != null && MyADC.NetworkId == args.Target.NetworkId)
+                {
+                    if (_e.IsReady() && (HpPercentage > g_nMyADCDamagePercent))
+                    {
+                        Entry.PrintChat(string.Format("Help Pix {0}! = {1:F2} > {2} / {3}", MyADC.CharData.BaseSkinName, HpPercentage, g_nMyADCDamagePercent, args.SData.Name));
+                        _e.CastOnUnit(MyADC);
+                    }
+                }
+
+            }
+        }
+
         private static void AntiGapcloser_OnEnemyGapcloser(ActiveGapcloser gapcloser)
         {
             // use W against gap closer
@@ -169,7 +325,11 @@ namespace JinxsSupport.Plugins
                 Render.Circle.DrawCircle(Player.Position, _q.Range + _e.Range, Color.YellowGreen);
             if (_menu.Item("DPIX").GetValue<bool>() && pix != null) 
                 Render.Circle.DrawCircle(pix.Position + new Vector3(0, 0, 15), 75, Color.Yellow, 5, true);
-
+            if(g_bPassiveModeE)
+            {
+                var playerPos = Drawing.WorldToScreen(Player.Position);
+                Drawing.DrawText(playerPos.X-30, playerPos.Y - 115, Color.AliceBlue, "(E)Passive");
+            }
         }
 
         public static void Game_OnGameUpdate (EventArgs args)
@@ -254,7 +414,7 @@ namespace JinxsSupport.Plugins
             {
                 foreach (var hero in HeroManager.Enemies.Where(x => x.IsValidTarget(_e.Range) && _e.GetDamage(x) >= x.Health))
                 {
-                    if (_e.CanCast(hero)) _e.CastOnUnit(hero);
+                    if (_e.CanCast(hero) && !g_bPassiveModeE) _e.CastOnUnit(hero);
                 }
             }
             #endregion
@@ -372,7 +532,7 @@ namespace JinxsSupport.Plugins
             }
 
             // cast E
-            if (_e.IsReady() && _menu.Item("EC").GetValue<bool>())
+            if (_e.IsReady() && _menu.Item("EC").GetValue<bool>() && !g_bPassiveModeE) 
             {
                 var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
                 if (target != null && _e.CanCast(target))
@@ -391,7 +551,7 @@ namespace JinxsSupport.Plugins
                 }
             }
             // QE combo 분리필요
-            if (_q.IsReady() && _e.IsReady() && Player.Mana >= _q.Instance.ManaCost + _e.Instance.ManaCost && _menu.Item("QEC").GetValue<bool>() && _menu.Item("EC").GetValue<bool>())
+            if (_q.IsReady() && _e.IsReady() && Player.Mana >= _q.Instance.ManaCost + _e.Instance.ManaCost && _menu.Item("QEC").GetValue<bool>() && _menu.Item("EC").GetValue<bool>() && !g_bPassiveModeE)
             {
                 PixEQCombo();
             }
@@ -399,7 +559,7 @@ namespace JinxsSupport.Plugins
 
         public static void Harass2()
         {
-            if((Player.Mana * 100 / Player.MaxMana >= _menu.Item("ManaH").GetValue<Slider>().Value)&& _menu.Item("QEH").GetValue<bool>())
+            if((Player.Mana * 100 / Player.MaxMana >= _menu.Item("ManaH").GetValue<Slider>().Value) && _menu.Item("QEH").GetValue<bool>() && !g_bPassiveModeE)
             {
                 PixEQCombo();
             }
@@ -421,7 +581,7 @@ namespace JinxsSupport.Plugins
                 if (_e.IsReady() && _menu.Item("EH").GetValue<bool>())
                 {
                     var target = TargetSelector.GetTarget(_e.Range, TargetSelector.DamageType.Magical);
-                    if (target != null && _e.CanCast(target))
+                    if (target != null && _e.CanCast(target) && !g_bPassiveModeE)
                     {
                         _e.CastOnUnit(target);
                     }
@@ -432,6 +592,24 @@ namespace JinxsSupport.Plugins
         // get Pix!
         public static void Getpixed()
         {
+            if(g_bIniEShieldMenu)
+            {
+                g_bPassiveModeE = _menu.Item("Victoious.Lulu.PassviceMode.Enable").GetValue<KeyBind>().Active;
+                g_nDamagePercent = _menu.Item("Victoious.Lulu.PassviceMode.DamageP").GetValue<Slider>().Value;
+                g_nDamageCritical = _menu.Item("Victoious.Lulu.PassviceMode.Critical").GetValue<Slider>().Value;
+                g_nMyADCDamagePercent = _menu.Item("Victoious.Lulu.PassviceMode.DamageADC").GetValue<Slider>().Value;
+                foreach (var ally in ObjectManager.Get<Obj_AI_Hero>().Where(h => h.IsAlly && !h.IsMe))
+                {
+                    var championName = ally.CharData.BaseSkinName;
+                    if (_menu.Item("HelpPix" + championName).GetValue<bool>())
+                    {
+                        g_strMyADC = championName;
+                        break;
+                    }
+                    else g_strMyADC = null;
+                }
+            }
+
             if (Player.IsDead)
                 pix = Player;
             if (!Player.IsDead)

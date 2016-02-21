@@ -462,10 +462,10 @@ namespace JinxsSupport.Plugins
             {
                 return spell.Cast(poutput2.CastPosition);
             }
-            else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
+            //else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
+            //{
+            //    return spell.Cast(poutput2.CastPosition);
+            //}
             return false;
         }
 

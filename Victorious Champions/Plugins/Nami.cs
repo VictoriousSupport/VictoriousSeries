@@ -157,7 +157,7 @@ namespace JinxsSupport.Plugins
             miscMenu.AddItem(new MenuItem("ElNamiReborn.Draw.W", "Draw W").SetValue(true));
             miscMenu.AddItem(new MenuItem("ElNamiReborn.Draw.E", "Draw E").SetValue(false));
             miscMenu.AddItem(new MenuItem("ElNamiReborn.Draw.R", "Draw R").SetValue(false));
-            miscMenu.AddItem(new MenuItem("ElNamiReborn.Draw.Text", "Draw Text").SetValue(true));
+            //miscMenu.AddItem(new MenuItem("ElNamiReborn.Draw.Text", "Draw Text").SetValue(true));
 
             _menu.AddSubMenu(miscMenu);
 
