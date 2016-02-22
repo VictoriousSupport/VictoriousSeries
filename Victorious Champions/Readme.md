@@ -53,9 +53,17 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.2.8]
+    - 룰루 E Logic 변경 (Passive Mode)
+     - Passive Mode Toggle Key 설정 가능 (기본 N Key + Drawing)
+     - Passive Mode 일 경우에는 E 스킬을 무조건 방어 용도로만 사용함. (콤보일때도 사용하지 않음)
+     - Spellbook 지정으로 해당 기술이 발동되면 우선적으로 방어함.
+     - My ADC 를 선택할 수 있어, 룰루 + 우리 원딜을 보호하도록 설정 가능
+     - 특정 수치 이상의 데미지가 들어오면 보호막 발동 (보호막은 방어가능수치 만큼만 보호하고, 사라짐) 
+
   - [6.3.2.6]
     - 시비르 E Shield Logic 수정
-	- 서폿모드시 주변 챔피언에 상관없이 항상 미니언을 치지 않음으로 변경 (C/V Key 용도를 새롭게 하기 위함.)
+    - 서폿모드시 주변 챔피언에 상관없이 항상 미니언을 치지 않음으로 변경 (C/V Key 용도를 새롭게 하기 위함.)
 	  - Lulu: C Key는 일반 E Harass / V Key는 E+Q Harass
 	  - Alistar: C Key는 WQ 콤보 / V Key 는 QW 콤보
 	  - 일반 Moveto 명령은 휴머나이저가 적용이 되어 있지 않아 사용하기 두려움!

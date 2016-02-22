@@ -41,16 +41,20 @@ namespace JinxsSupport.Plugins
 
         private static bool g_bIniEShieldMenu = false;      // Eshield Menu Configure Flag
         private static bool g_bPassiveModeE = false;        // Lulu Passive Mode
-        private static int g_nDamagePercent;                // Dagame % for Defence
+        //private static int g_nDamagePercent;                // Dagame % for Defence
         private static int g_nDamageCritical;               // Critical Damage
         private static int g_nMyADCDamagePercent;           // My ADC Damage % for Defence
         private static string g_strMyADC = null;
 
         private static string[] Spells =
         {
-            "drain","consume","absolutezero", "staticfield","jinxr","shenstandunited","threshe","threshrpenta", "volibearqattack",
-            "cassiopeiapetrifyinggaze","galioidolofdurand", "infiniteduress","lucianq","velkozr","rocketgrabmissile",
-
+            "brandfissure",                 // 브랜드 W
+            "incinerate",                   // 애니 W
+            "infiniteduress",               // 워윅 R
+            "lucianq",                      // 루시안 Q
+            "velkozr",                      // 벨코즈 R
+            "rocketgrabmissile",            // 블리츠 Q
+            "crowstorm",                    // 피들 R
             "ezrealtrueshotbarrage",        // 이즈리얼 R
             "ReapTheWhirlwind",             // 잔나 W
             "luxmalicecannon",              // 럭스 R
@@ -161,8 +165,8 @@ namespace JinxsSupport.Plugins
             Menu PassiveMode = _menu.AddSubMenu(new Menu("Passive Mode | E", "PassiveModeE"));
 
             PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.Enable", "Self-Defence Enable").SetValue(new KeyBind("N".ToCharArray()[0], KeyBindType.Toggle, false)));
-            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.Critical", "Critical Threshold HP(%)").SetValue(new Slider(10, 0, 30)));
-            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.DamageP", "Damage > My HP(%)").SetValue(new Slider(4, 0, 30)));
+            PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.Critical", "Damage Threshold HP(%)").SetValue(new Slider(10, 0, 30)));
+            //PassiveMode.AddItem(new MenuItem("Victoious.Lulu.PassviceMode.DamageP", "Damage > My HP(%)").SetValue(new Slider(4, 0, 30)));
 
             var MyADCMenu = new Menu("My ADC (Select One)", "SelectMyADC");
             {
@@ -207,7 +211,7 @@ namespace JinxsSupport.Plugins
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             bool bCriticalSpell = false;
-            if ( !sender.IsEnemy || sender.IsMinion || !sender.IsValid<Obj_AI_Hero>() || Player.Distance(sender.ServerPosition) > 3340) return;
+            if ( !sender.IsEnemy || sender.IsMinion || !sender.IsValid<Obj_AI_Hero>() || Player.Distance(sender.ServerPosition) > 1800) return;
 
             var foundSpell = Spells.Find(x => args.SData.Name.ToLower() == x.ToLower());
             if (foundSpell != null)
@@ -215,51 +219,47 @@ namespace JinxsSupport.Plugins
                 Entry.PrintChat(string.Format("<font color=\"#FFAA00\" >Critical Skill ({0})!!!!!!</font>", args.SData.Name));
                 bCriticalSpell = true;
             }
-
-            if (bCriticalSpell && _e.IsReady())
-            {
-                //foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range && (ally.CharData.BaseSkinName == g_strMyADC || ally.IsMe)))
-                foreach (var ally in HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range ))
-                {
-                    if (args.Target != null && args.Target.NetworkId == ally.NetworkId)
-                    {
-                        Entry.PrintChat(string.Format("Critical Shield (Targeted) = {0}/{1}", args.SData.Name, ally.CharData.BaseSkinName));
-                        _e.CastOnUnit(ally);
-                        return;
-                    }
-                    else
-                    {
-                        var castArea = ally.Distance(args.End) * (args.End - ally.ServerPosition).Normalized() + ally.ServerPosition;
-                        if (castArea.Distance(ally.ServerPosition) > ally.BoundingRadius / 2)
-                            continue;
-
-                        Entry.PrintChat(string.Format("Critical Shield (Location) = {0}/{1}", args.SData.Name, ally.CharData.BaseSkinName));
-                        _e.CastOnUnit(ally);
-                        return;
-                    }
-                }
-            }
-                
+               
             ////g_nDamageCritical, g_nMyADCDamagePercent
             if (args.Target.IsMe)
             {
                 var dmg = sender.GetSpellDamage(Player, args.SData.Name);     // 예상 데미지
                 double HpPercentage = (dmg * 100) / Player.MaxHealth;         // 예상 데미지% (전체HP)
 
-                Entry.PrintChat(string.Format("{0}({1}): {2:F2}/{3}({4})", args.SData.Name, args.SData.TargettingType, HpPercentage, g_nDamagePercent, _e.IsReady()));
+                Entry.PrintChat(string.Format("{0}({1}): {2:F2}/{3}({4})", args.SData.Name, args.SData.TargettingType, HpPercentage, g_nDamageCritical, _e.IsReady()));
 
                 if (!g_bPassiveModeE || !_e.IsReady()) return;
 
-                if (HpPercentage > g_nDamageCritical)
+                // PassiveMode가 활성화 되어 있을때
+                if(bCriticalSpell)
+                {
+                    if (args.Target != null && args.Target.NetworkId == Player.NetworkId)
+                    {
+                        Entry.PrintChat(string.Format("Help Pix Lulu! Targeted Critical = {0}({1:F2})", args.SData.Name, HpPercentage));
+                        _e.CastOnUnit(Player);
+                    }
+                    else
+                    {
+                        var castArea = Player.Distance(args.End) * (args.End - Player.ServerPosition).Normalized() + Player.ServerPosition;
+                        if (castArea.Distance(Player.ServerPosition) <= Player.BoundingRadius / 2)
+                        {
+                            Entry.PrintChat(string.Format("Help Pix Lulu! Location Critical = {0}({1:F2})", args.SData.Name, HpPercentage));
+                            _e.CastOnUnit(Player);
+                        }
+                    }
+                }
+                else if (HpPercentage > g_nDamageCritical)
                 {
                     Entry.PrintChat(string.Format("Help Pix Lulu! High Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamageCritical, args.SData.Name));
                     _e.CastOnUnit(Player);
                 }
+                /*  // 일단 하나의 기준으로 진행하자
                 else if (HpPercentage > g_nDamagePercent)
                 {
                     Entry.PrintChat(string.Format("Help Pix Lulu! Normal Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamagePercent, args.SData.Name));
                     _e.CastOnUnit(Player);
                 }
+                */
             }
             else if (args.Target.IsAlly && args.Target.IsValid<Obj_AI_Hero>() && !string.IsNullOrEmpty(g_strMyADC))
             {
@@ -270,14 +270,34 @@ namespace JinxsSupport.Plugins
 
                 Entry.PrintChat(string.Format("{0}: {1:F2}/{2}({3})", MyADC.CharData.BaseSkinName, HpPercentage, g_nMyADCDamagePercent, _e.IsReady()));
 
+                if (!g_bPassiveModeE || !_e.IsReady()) return;
+
                 if (MyADC != null && MyADC.NetworkId == args.Target.NetworkId)
                 {
-                    if (_e.IsReady() && (HpPercentage > g_nMyADCDamagePercent))
+                    if (bCriticalSpell)
+                    {
+                        Entry.PrintChat(string.Format("Help Pix {0}! Targeted Critical = {1}({2:F2})", MyADC.CharData.BaseSkinName, args.SData.Name, HpPercentage));
+                        _e.CastOnUnit(MyADC);
+                    }
+                    else if (HpPercentage > g_nMyADCDamagePercent)
                     {
                         Entry.PrintChat(string.Format("Help Pix {0}! = {1:F2} > {2} / {3}", MyADC.CharData.BaseSkinName, HpPercentage, g_nMyADCDamagePercent, args.SData.Name));
                         _e.CastOnUnit(MyADC);
                     }
                 }
+                else
+                {
+                    if (bCriticalSpell)
+                    {
+                        var castArea = Player.Distance(args.End) * (args.End - Player.ServerPosition).Normalized() + Player.ServerPosition;
+                        if (castArea.Distance(Player.ServerPosition) <= Player.BoundingRadius / 2)
+                        {
+                            Entry.PrintChat(string.Format("Help Pix {0}! Location Critical = {1}({2:F2})", MyADC.CharData.BaseSkinName, args.SData.Name, HpPercentage));
+                            _e.CastOnUnit(Player);
+                        }
+                    }
+                }
+
 
             }
         }
@@ -595,7 +615,7 @@ namespace JinxsSupport.Plugins
             if(g_bIniEShieldMenu)
             {
                 g_bPassiveModeE = _menu.Item("Victoious.Lulu.PassviceMode.Enable").GetValue<KeyBind>().Active;
-                g_nDamagePercent = _menu.Item("Victoious.Lulu.PassviceMode.DamageP").GetValue<Slider>().Value;
+                //g_nDamagePercent = _menu.Item("Victoious.Lulu.PassviceMode.DamageP").GetValue<Slider>().Value;
                 g_nDamageCritical = _menu.Item("Victoious.Lulu.PassviceMode.Critical").GetValue<Slider>().Value;
                 g_nMyADCDamagePercent = _menu.Item("Victoious.Lulu.PassviceMode.DamageADC").GetValue<Slider>().Value;
                 foreach (var ally in ObjectManager.Get<Obj_AI_Hero>().Where(h => h.IsAlly && !h.IsMe))

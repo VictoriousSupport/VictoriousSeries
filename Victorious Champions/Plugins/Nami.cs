@@ -418,7 +418,7 @@ namespace JinxsSupport.Plugins
                         }
                     }
 
-                    // 한타시 3인(Default) 이상이고, 평균 HP% = 65% 이하일 경우, 즉 그 이전의 이니시는 손으로 하시고, 이건 콤보중 궁극기로 일괄 데미지를 주고 싶을때 시전...
+                    // 한타시 3인(Default) 이상이고, 평균 HP% = 75% 이하일 경우, 즉 그 풀피 이니시는 그냥 손으로 하셈.
                     if (ObjectManager.Player.CountEnemiesInRange(spells[Spells.R].Range) >= countR)
                     {
                         nTotalenemyCount++;
