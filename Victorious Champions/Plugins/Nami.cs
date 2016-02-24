@@ -17,13 +17,7 @@ namespace JinxsSupport.Plugins
     using LeagueSharp.Common;
     using System.Drawing;
 
-    internal enum Spells
-    {
-        Q,
-        W,
-        E,
-        R
-    }
+
 
     internal class Nami : IPlugin
     {

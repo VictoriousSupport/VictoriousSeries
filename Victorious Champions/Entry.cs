@@ -24,6 +24,14 @@ namespace JinxsSupport
     using LeagueSharp;
     using LeagueSharp.Common;
 
+    internal enum Spells
+    {
+        Q,
+        W,
+        E,
+        R
+    }
+
     /// <summary>
     ///     어셈블리 시작점, 챔피언 이름을 얻어 해당 플러그인을 적재함.
     /// </summary>

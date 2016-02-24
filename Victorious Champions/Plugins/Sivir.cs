@@ -438,7 +438,7 @@ namespace JinxsSupport.Plugins
             {
                 var t = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
                 // 타겟이 터렛 아래 있지 않을때...
-                if(R.IsReady() && t.IsValidTarget() && !ObjectManager.Get<Obj_AI_Turret>().Any(turret => turret.Distance(t.Position) < 950 && turret.IsEnemy))
+                if(R.IsReady() && t.IsValidTarget() && !t.UnderTurret())
                     R.Cast();
             }
                 
