@@ -270,7 +270,7 @@ namespace JinxsSupport.Plugins
             var OKTWPlayer = ObjectManager.Player;
 
             OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = true;
+            bool aoe2 = false;
 
             var predInput2 = new OKTWPrediction.PredictionInput
             {
@@ -294,10 +294,7 @@ namespace JinxsSupport.Plugins
             {
                 return spell.Cast(poutput2.CastPosition);
             }
-            else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
+
             return false;
         }
         #region Harass

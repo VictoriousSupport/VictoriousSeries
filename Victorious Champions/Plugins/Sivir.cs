@@ -335,7 +335,7 @@ namespace JinxsSupport.Plugins
                 var target = ObjectManager.Get<Obj_AI_Hero>().FirstOrDefault(enemy => enemy.IsEnemy && !enemy.IsDead && enemy.IsValidTarget(Q.Range) && enemy.Health < player.GetSpellDamage(enemy, SpellSlot.Q));
                 if (target != null)
                 {
-                    QCastOKTW(target, false);
+                    QCastOKTW(target);
                     return true;
                 }
             }
@@ -354,13 +354,14 @@ namespace JinxsSupport.Plugins
             else
                 return true;
         }
-        public static bool QCastOKTW(Obj_AI_Hero target, bool bAoe)
+
+        public static bool QCastOKTW(Obj_AI_Hero target)
         {
             var spell = Q;
             var OKTWPlayer = player;
 
             OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = bAoe;
+            bool aoe2 = false;
 
             var predInput2 = new OKTWPrediction.PredictionInput
             {
@@ -379,12 +380,8 @@ namespace JinxsSupport.Plugins
             if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
                 return false;
 
-            // Multi Targets 모드일때는 2명 이상 맞을 확률이 High 이상일때 기술 시전 / Single Target 모드일때는 VeryHigh 로 시전
-            if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            else if (!predInput2.Aoe && poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
+            // 다중 타켓 모드 삭제: 이상동작을 일으킴
+            if (!predInput2.Aoe && poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
             {
                 return spell.Cast(poutput2.CastPosition);
             }
@@ -403,17 +400,17 @@ namespace JinxsSupport.Plugins
                 if (QCastKillSteal()) return;
 
                 // 타게팅이 없고, 사거리내 불능인 녀석이 있으면 Q 시전
-                if (player.Mana > RMANA + WMANA)
+                if (player.Mana > QMANA)
                 {
                     foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range) && !OKTWCanMove(x)))
                     {
-                        QCastOKTW(enemy, false);
+                        QCastOKTW(enemy);
                         return;
                     }
                 }
 
                 // 타게팅에 Q 시전 
-                if (Q.IsReady()) QCastOKTW(t, false);
+                if (Q.IsReady()) QCastOKTW(t);
 
             }
         }
@@ -422,30 +419,30 @@ namespace JinxsSupport.Plugins
         {
             var t = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
 
-            if (t.IsValidTarget() & Q.IsReady())
+            if (t.IsValidTarget() && Q.IsReady())
             {
                 // 한번의 시전으로 2명 이상 맞출 수 있으면 기술 시전, 챔피언이 Q사거리 끝선에 있어 무조건 2번 맞고 내려올 수 있을때
                 if ((player.CountEnemiesInRange(Q.Range) >= 2) && ((t.Distance(player)) >= 950f))
                 {
-                    if (QCastOKTW(t, true)) return;
+                    if (QCastOKTW(t)) return;
                 }
-
-                /*
-                // 
-                if ((t.Distance(player)) >= 950f)       // 사거리 950f는 튜닝 필요 (Q 사거리 1250f)
-                {
-                    if (QCastOKTW(t, false)) return;
-                }
-                */
             }
 
         }
 
-        // Combo시 사용되는 R Logic: 발동조건이 조금 까다로움.
+        // Combo시 사용되는 R Logic: 발동조건 강화
         private static void ComboLogicR()
         {
-            // 1250f 범위내 적군이 2명 이상이고, 1000f 범위내 아군이 3명 이상이면 자동 발동 (그 외에는 수동으로 조작 필요)
-            if ((player.CountEnemiesInRange(Q.Range) > 1) && (player.CountAlliesInRange(R.Range) > 2)) R.Cast();
+            // 1250f 범위내 적군이 2명 이상이고, 1000f 범위내 아군이 3명 이상이고,
+            if ((player.CountEnemiesInRange(Q.Range) > 1) && (player.CountAlliesInRange(R.Range) > 2))
+            {
+                var t = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Physical);
+                // 타겟이 터렛 아래 있지 않을때...
+                if(R.IsReady() && t.IsValidTarget() && !ObjectManager.Get<Obj_AI_Turret>().Any(turret => turret.Distance(t.Position) < 950 && turret.IsEnemy))
+                    R.Cast();
+            }
+                
+               
         }
         #endregion
 

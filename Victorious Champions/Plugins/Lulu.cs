@@ -48,15 +48,11 @@ namespace JinxsSupport.Plugins
 
         private static string[] Spells =
         {
-            "brandfissure",                 // 브랜드 W
             "incinerate",                   // 애니 W
             "infiniteduress",               // 워윅 R
-            "lucianq",                      // 루시안 Q
             "velkozr",                      // 벨코즈 R
-            "rocketgrabmissile",            // 블리츠 Q
             "crowstorm",                    // 피들 R
             "ezrealtrueshotbarrage",        // 이즈리얼 R
-            "ReapTheWhirlwind",             // 잔나 W
             "luxmalicecannon",              // 럭스 R
             "missfortunebullettime",        // 미포 R
             "caitlynaceinthehole",          // 케이틀린 R
@@ -70,7 +66,6 @@ namespace JinxsSupport.Plugins
             "bustershot",                   // 트타 R
             "trundlePain",                  // 트런들 R
             "vir",                          // 바이 R
-            "InfiniteDuress",               // 워윅 R
             "ZedR",                         // 제드 R
             "Terrify",                      // 피들스틱 Q
             "BlindMonkRKick",               // 리신 R
@@ -208,6 +203,7 @@ namespace JinxsSupport.Plugins
         }
         #endregion
 
+        // 말도 많고 탈도 많은 Spell E Passvie Mode (FPS Drop)
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             bool bCriticalSpell = false;
@@ -220,7 +216,6 @@ namespace JinxsSupport.Plugins
                 bCriticalSpell = true;
             }
                
-            ////g_nDamageCritical, g_nMyADCDamagePercent
             if (args.Target.IsMe)
             {
                 var dmg = sender.GetSpellDamage(Player, args.SData.Name);     // 예상 데미지
@@ -241,7 +236,7 @@ namespace JinxsSupport.Plugins
                     else
                     {
                         var castArea = Player.Distance(args.End) * (args.End - Player.ServerPosition).Normalized() + Player.ServerPosition;
-                        if (castArea.Distance(Player.ServerPosition) <= Player.BoundingRadius / 2)
+                        if (castArea.Distance(Player.ServerPosition) <= _e.Range/2) 
                         {
                             Entry.PrintChat(string.Format("Help Pix Lulu! Location Critical = {0}({1:F2})", args.SData.Name, HpPercentage));
                             _e.CastOnUnit(Player);
@@ -253,15 +248,9 @@ namespace JinxsSupport.Plugins
                     Entry.PrintChat(string.Format("Help Pix Lulu! High Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamageCritical, args.SData.Name));
                     _e.CastOnUnit(Player);
                 }
-                /*  // 일단 하나의 기준으로 진행하자
-                else if (HpPercentage > g_nDamagePercent)
-                {
-                    Entry.PrintChat(string.Format("Help Pix Lulu! Normal Damage = {0:F2} > {1} / {2}", HpPercentage, g_nDamagePercent, args.SData.Name));
-                    _e.CastOnUnit(Player);
-                }
-                */
+
             }
-            else if (args.Target.IsAlly && args.Target.IsValid<Obj_AI_Hero>() && !string.IsNullOrEmpty(g_strMyADC))
+            else if (args.Target.IsAlly && args.Target.IsValid<Obj_AI_Hero>() && !string.IsNullOrEmpty(g_strMyADC))         // My ADC만 보호함
             {
                 var MyADC = HeroManager.Allies.Where(ally => ally.IsValid && Player.Distance(ally.ServerPosition) < _e.Range).Find(ally => ally.CharData.BaseSkinName == g_strMyADC);
 
@@ -376,7 +365,7 @@ namespace JinxsSupport.Plugins
             var OKTWPlayer = Player;
 
             OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = true;
+            bool aoe2 = false;
 
             var predInput2 = new OKTWPrediction.PredictionInput
             {
@@ -397,10 +386,6 @@ namespace JinxsSupport.Plugins
 
             // 단일 타겟일때는 VeryHigh, 다중 타겟을때는 High 기준으로 기술 시전
             if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= OKTWPrediction.HitChance.High)
             {
                 return spell.Cast(poutput2.CastPosition);
             }
