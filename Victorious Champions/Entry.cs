@@ -31,7 +31,6 @@ namespace JinxsSupport
         E,
         R
     }
-
     /// <summary>
     ///     어셈블리 시작점, 챔피언 이름을 얻어 해당 플러그인을 적재함.
     /// </summary>
@@ -70,6 +69,19 @@ namespace JinxsSupport
             }
         }
         private static Menu menu;      // Support Mode
+
+        public enum TargetingMode
+        {
+            AutoPriority,
+            LowHP,
+            MostAD,
+            MostAP,
+            Closest,
+            NearMouse,
+            LessAttack,
+            LessCast,
+            MostStack
+        }
         #endregion
 
         #region Public Methods and Operators
@@ -108,7 +120,7 @@ namespace JinxsSupport
         {
             try
             {
-                menu = new Menu("Support Mode", "SupportMode", true);
+                menu = new Menu("Support Mode", "SupportMode", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
                 menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(true)).Permashow(true, "Support Mode");
                 //menu.AddItem(new MenuItem("enabled", "Enabled").SetValue(new KeyBind('8', KeyBindType.Toggle, true))).Permashow(true, "Support Mode");
                 menu.AddToMainMenu();
@@ -130,7 +142,35 @@ namespace JinxsSupport
                         plugin.CreateMenu();                // 각 인터페이스 클래스(챔피언)는 CreateMenu() 항목을 가져야 함.
                     }
                 }
-                
+
+#if false       // 해결 필요!
+                Menu rootMenu = Menu.GetMenu("LeagueSharp.Common", "LeagueSharp.Common");
+                if (rootMenu != null)
+                {
+                    if (Player.CharData.BaseSkinName.ToLower() == "sivir" ||
+                        Player.CharData.BaseSkinName.ToLower() == "thresh" ||
+                        Player.CharData.BaseSkinName.ToLower() == "tristana")
+                    {
+                        rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode))));
+                        //.GetValue<StringList>()
+                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.LessAttack);
+                    }
+                    else if (Player.CharData.BaseSkinName.ToLower() == "bard" ||
+                            Player.CharData.BaseSkinName.ToLower() == "alistar" ||
+                            Player.CharData.BaseSkinName.ToLower() == "lulu" ||
+                            Player.CharData.BaseSkinName.ToLower() == "nami" ||
+                            Player.CharData.BaseSkinName.ToLower() == "soraka")
+                    {
+                        //rootMenu.Item("TargetingMode").SetValue(TargetingMode.LessCast);
+                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.LessCast);
+                    }
+                    else
+                    {
+                        //rootMenu.Item("TargetingMode").SetValue(TargetingMode.AutoPriority);
+                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.AutoPriority);
+                    }
+                }
+#endif
             }
             catch (Exception e)
             {
@@ -164,6 +204,6 @@ namespace JinxsSupport
                 }
             }
         }
-        #endregion
+#endregion
     }
 }

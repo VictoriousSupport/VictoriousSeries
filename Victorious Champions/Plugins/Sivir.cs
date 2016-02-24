@@ -405,6 +405,7 @@ namespace JinxsSupport.Plugins
                     foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range) && !OKTWCanMove(x)))
                     {
                         QCastOKTW(enemy);
+                        Orbwalker.ForceTarget(enemy);
                         return;
                     }
                 }

@@ -18,7 +18,6 @@ namespace JinxsSupport.Plugins
     using System.Drawing;
 
 
-
     internal class Nami : IPlugin
     {
 

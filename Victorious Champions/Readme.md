@@ -45,14 +45,28 @@ Supported Champion
  - New Q Harss Logic: [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
  - New R Logic : [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
  - New E Shield Logic (Perfact): [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
-8. Sona (WIP)
+8. **Tristana (ADC)**
+ - Origin: Eltristana by by jQuery
+ - Delete W Logic
+ - Jungle Logic: OKTW 
+ - New E Harass Logic:[Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
+9. Sona (WIP)
  - Origin: ElEasy by jQuery
-9. Leona (WIP)
+10. Leona (WIP)
  - Origin: ElEasy by jQuery
 
 
 Version History
 ---
+  - [6.3.3.1]
+    - 챔피언에 맞춰 타겟모드 자동 설정 (ADC=LessAttack / AP=LessCast)
+    - **Tristana**
+     - Harass 모드 강화
+        - E Logic: C/V Key 상태일때 적이 CC에 걸렸을때 발동
+     - Smart Laneclear (with E Logic)
+        - E Logic: 미니언이 11마리 이상 일때
+     - E가 활성화 되면 이후 모든 타겟 포커스를 해당 타겟으로 이동하는 특징을 가짐.
+        - Combo/Harass/LaneClear 등 어떤 상태이던지 폭탄이 올려있는 타겟을 우선 때림
   - [6.3.2.8]
     - 룰루 E Logic 변경 (Passive Mode)
      - Passive Mode Toggle Key 설정 가능 (기본 N Key + Drawing)

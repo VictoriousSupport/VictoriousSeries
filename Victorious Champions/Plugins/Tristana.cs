@@ -10,15 +10,6 @@
     using SharpDX;
     using Color = System.Drawing.Color;
     using ItemData = LeagueSharp.Common.Data.ItemData;
-    /*
-    internal enum Spells
-    {
-        Q,
-        W,
-        E,
-        R
-    }
-    */
 
     internal class Tristana : IPlugin
     {
@@ -59,8 +50,7 @@
             try
             {
                 spells[Spells.W].SetSkillshot(0.35f, 250f, 1400f, false, SkillshotType.SkillshotCircle);
-
-                Entry.PrintChat("<font color=\"#66CCFF\" >Sivir</font>");
+                Entry.PrintChat("<font color=\"#66CCFF\" >Tristana</font>");
             }
             catch (Exception e)
             {
@@ -72,10 +62,10 @@
         #region CreateMenu() Function
         public void CreateMenu()
         {
-            Menu = new Menu("Tristana", "menu", true);
+            Menu = new Menu("Vicroious Tristana", "menu", true).SetFontStyle(FontStyle.Regular, SharpDX.Color.GreenYellow);
 
             var orbwalkerMenu = new Menu("Orbwalker", "orbwalker");
-            Tristana.Orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);
+            Orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);
 
             Menu.AddSubMenu(orbwalkerMenu);
 
@@ -90,16 +80,16 @@
             comboMenu.AddItem(new MenuItem("ElTristana.Combo.R", "Use R").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElTristana.Combo.Focus.E", "Focus E target").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElTristana.Combo.Always.RE", "Use E + R finisher").SetValue(true));
-            comboMenu.AddItem(new MenuItem("ElTristana.Combo.E.Mana", "Minimum mana for E")).SetValue(new Slider(25));
 
             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
-                comboMenu.SubMenu("Use E on")
+                comboMenu.SubMenu("E Combo Enable")
                     .AddItem(
                         new MenuItem("ElTristana.E.On" + hero.ChampionName, hero.ChampionName)
                             .SetValue(true));
 
             Menu.AddSubMenu(comboMenu);
 
+#if false
             var suicideMenu = new Menu("W settings", "Suicide menu").SetFontStyle(FontStyle.Regular, SharpDX.Color.GreenYellow);
             suicideMenu.AddItem(new MenuItem("ElTristana.W", "Use this special feature").SetValue(false));
             suicideMenu.AddItem(new MenuItem("ElTristana.W.Jump.kill", "Only jump when killable").SetValue(false));
@@ -109,16 +99,16 @@
             suicideMenu.AddItem(new MenuItem("ElTristana.W.Enemies.Range", "Enemies in range distance check")).SetValue(new Slider(1500, 800, 2000));
 
             Menu.AddSubMenu(suicideMenu);
-
+#endif
 
             var harassMenu = new Menu("Harass", "Harass");
             harassMenu.AddItem(new MenuItem("ElTristana.Harass.Q", "Use Q").SetValue(false));
             harassMenu.AddItem(new MenuItem("ElTristana.Harass.E", "Use E").SetValue(true));
             harassMenu.AddItem(new MenuItem("ElTristana.Harass.QE", "Use Q only with E").SetValue(false));
-            harassMenu.AddItem(new MenuItem("ElTristana.Harass.E.Mana", "Minimum mana for E")).SetValue(new Slider(25));
+            harassMenu.AddItem(new MenuItem("ElTristana.Harass.E.Mana", "Minimum mana for E")).SetValue(new Slider(50));
 
             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(hero => hero.IsEnemy))
-                harassMenu.SubMenu("Use E on")
+                harassMenu.SubMenu("E Harass Enable")
                     .AddItem(
                         new MenuItem("ElTristana.E.On.Harass" + hero.CharData.BaseSkinName, hero.CharData.BaseSkinName)
                             .SetValue(true));
@@ -128,16 +118,16 @@
 
             var laneClearMenu = new Menu("Laneclear", "Laneclear");
             laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.Q", "Use Q").SetValue(false));
-            laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.E", "Use E").SetValue(false));
-            laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.Tower", "Use E on tower").SetValue(true));
-            laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.E.Mana", "Minimum mana for E")).SetValue(new Slider(25));
+            laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.E", "Use E").SetValue(true));
+            //laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.Tower", "Use E on tower").SetValue(false));
+            laneClearMenu.AddItem(new MenuItem("ElTristana.LaneClear.E.Mana", "Minimum mana for E")).SetValue(new Slider(30));
 
             Menu.AddSubMenu(laneClearMenu);
 
             var jungleClearMenu = new Menu("Jungleclear", "Jungleclear");
             jungleClearMenu.AddItem(new MenuItem("ElTristana.JungleClear.Q", "Use Q").SetValue(true));
             jungleClearMenu.AddItem(new MenuItem("ElTristana.JungleClear.E", "Use E").SetValue(true));
-            jungleClearMenu.AddItem(new MenuItem("ElTristana.JungleClear.E.Mana", "Minimum mana for E")).SetValue(new Slider(25));
+            jungleClearMenu.AddItem(new MenuItem("ElTristana.JungleClear.E.Mana", "Minimum mana for E")).SetValue(new Slider(20));
 
             Menu.AddSubMenu(jungleClearMenu);
 
@@ -174,16 +164,20 @@
 
             Menu.AddSubMenu(miscMenu);
 
+
+            Menu.AddToMainMenu();
+
             Game.OnUpdate += OnUpdate;
             Drawing.OnDraw += OnDraw;
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             Orbwalking.BeforeAttack += OrbwalkingBeforeAttack;
+
         }
-        #endregion
+#endregion
 
 
-        #region Methods
+#region Methods
 
         private static void OrbwalkingBeforeAttack(Orbwalking.BeforeAttackEventArgs args)
         {
@@ -265,7 +259,7 @@
 
         private static void OnCombo()
         {
-            #region Combo Target Selection 가급적 E가 올려 있는 녀석을 선택함.
+#region Combo Target Selection 가급적 E가 올려 있는 녀석을 선택함.
             var eTarget =
                 HeroManager.Enemies.Find(x => x.HasBuff("TristanaECharge") && x.IsValidTarget(Orbwalking.GetRealAutoAttackRange(Player)));
             var target = eTarget ?? TargetSelector.GetTarget(spells[Spells.E].Range, TargetSelector.DamageType.Physical);                 // x ?? y: x가 null인 경우 y로 계산하고, 그렇지 않으면 x로 계산합니다.
@@ -288,10 +282,10 @@
                     Orbwalker.ForceTarget(null);
                 }
             }
-            #endregion
+#endregion
 
-            #region Combo Cast E Logic
-            if (spells[Spells.E].IsReady() && IsActive("ElTristana.Combo.E") && Player.ManaPercent > Menu.Item("ElTristana.Combo.E.Mana").GetValue<Slider>().Value)
+#region Combo Cast E Logic
+            if (spells[Spells.E].IsReady() && IsActive("ElTristana.Combo.E"))
             {
                 foreach (var hero in HeroManager.Enemies.OrderByDescending(x => x.Health))      
                 {
@@ -314,11 +308,11 @@
                     }
                 }
             }
-            #endregion
+#endregion
 
             //UseItems(target);
 
-            #region Combo Cast R Logic
+#region Combo Cast R Logic
             if (spells[Spells.R].IsReady() && IsActive("ElTristana.Combo.R"))
             {
                 // R 용도:  Kill Steal
@@ -336,15 +330,15 @@
                     spells[Spells.R].Cast(target);
                 }
             }
-            #endregion
+#endregion
 
-            #region Combo Cast Q Logic
+#region Combo Cast Q Logic
             // 일단 E 사거리내 적이 있으면 무조건 Q 발동
             if (spells[Spells.Q].IsReady() && IsActive("ElTristana.Combo.Q") && target.IsValidTarget(spells[Spells.E].Range))
             {
                 spells[Spells.Q].Cast();
             }
-            #endregion
+#endregion
         }
 
         private static bool HasEBuff(Obj_AI_Base target)
@@ -359,20 +353,21 @@
 
         private static void OnDraw(EventArgs args)
         {
+            if (Player.IsDead) return;
 
-            if (Menu.Item("ElTristana.Draw.Q").GetValue<Circle>().Active)
+            if (Menu.Item("ElTristana.Draw.Q").GetValue<bool>())
             {
-                if (spells[Spells.Q].Level > 0)
-                    Render.Circle.DrawCircle(ObjectManager.Player.Position, spells[Spells.Q].Range, Color.White);
+                Render.Circle.DrawCircle(ObjectManager.Player.Position, spells[Spells.Q].Range + ObjectManager.Player.BoundingRadius, Color.White, 1);
+                //Render.Circle.DrawCircle(ObjectManager.Player.Position, ObjectManager.Player.AttackRange + ObjectManager.Player.BoundingRadius, System.Drawing.Color.White, 1);
             }
 
-            if (Menu.Item("ElTristana.Draw.E").GetValue<Circle>().Active)
+            if (Menu.Item("ElTristana.Draw.E").GetValue<bool>())
             {
                 if (spells[Spells.E].Level > 0)
-                    Render.Circle.DrawCircle(ObjectManager.Player.Position, spells[Spells.E].Range, Color.White);
+                    Render.Circle.DrawCircle(ObjectManager.Player.Position, spells[Spells.E].Range + ObjectManager.Player.BoundingRadius, Color.White);
             }
 
-            if (Menu.Item("ElTristana.Draw.R").GetValue<Circle>().Active)
+            if (Menu.Item("ElTristana.Draw.R").GetValue<bool>())
             {
                 if (spells[Spells.R].Level > 0)
                     Render.Circle.DrawCircle(ObjectManager.Player.Position, spells[Spells.R].Range, Color.White);
@@ -382,7 +377,7 @@
             // E Charge 적이 없으면 무조건 리턴됨?
             if (!target.IsValidTarget()) return;
 
-            #region Draw E Statkcs
+#region Draw E Statkcs
             if (IsActive("ElTristana.DrawStacks"))
             {
                 if (LastHarassPos == null)
@@ -403,7 +398,7 @@
                             for (var i = 0; 4 > i; i++)
                                 Drawing.DrawLine( x + i * 20, y, x + i * 20 + 10, y, 10, i > stacks ? Color.DarkGray : Color.DeepSkyBlue);
                         }
-
+#if false
                         if (stacks == 3)    // Max
                         {
                             if (IsActive("ElTristana.W"))
@@ -441,11 +436,23 @@
                                 }
                             }
                         }
+#endif
                     }
                 }
             }
-            #endregion
-             
+#endregion
+
+        }
+
+        public static bool OKTWCanMove(Obj_AI_Hero target)
+        {
+            if (target.MoveSpeed < 50 || target.IsStunned || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) ||
+                target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || (target.IsChannelingImportantSpell() && !target.IsMoving))
+            {
+                return false;
+            }
+            else
+                return true;
         }
 
         private static void OnHarass()      // Mixed Key (C)
@@ -463,7 +470,7 @@
                     if (hero.IsEnemy)
                     {
                         var getEnemies = Menu.Item("ElTristana.E.On.Harass" + hero.CharData.BaseSkinName);
-                        if (getEnemies != null && getEnemies.GetValue<bool>())
+                        if (getEnemies != null && getEnemies.GetValue<bool>() && !OKTWCanMove(hero))    // 아군 서폿이 CC 걸어준 경우에만 Harass... 아니면 말고...
                         {
                             spells[Spells.E].Cast(hero);
                             Orbwalker.ForceTarget(hero);
@@ -487,32 +494,34 @@
 
         private static void OnJungleClear()
         {
-            var minions =
-                MinionManager.GetMinions(
-                    spells[Spells.Q].Range,
+            var minions = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, spells[Spells.E].Range, MinionTypes.All, MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            /*
+            MinionManager.GetMinions(
+                    spells[Spells.E].Range,
                     MinionTypes.All,
                     MinionTeam.Neutral,
                     MinionOrderTypes.MaxHealth).FirstOrDefault();
-
-            if (!minions.IsValidTarget() || minions == null)
+*/
+            if (minions.Count > 0)
             {
-                return;
-            }
+                var mob = minions[0];
+                if (spells[Spells.E].IsReady() && IsActive("ElTristana.JungleClear.E")
+                    && Player.ManaPercent > Menu.Item("ElTristana.JungleClear.E.Mana").GetValue<Slider>().Value)
+                {
+                    spells[Spells.E].CastOnUnit(mob);
+                }
 
-            if (spells[Spells.E].IsReady() && IsActive("ElTristana.JungleClear.E")
-                && Player.ManaPercent > Menu.Item("ElTristana.JungleClear.E.Mana").GetValue<Slider>().Value)
-            {
-                spells[Spells.E].CastOnUnit(minions);
-            }
+                if (spells[Spells.Q].IsReady() && IsActive("ElTristana.JungleClear.Q"))
+                {
+                    spells[Spells.Q].Cast();
+                }
 
-            if (spells[Spells.Q].IsReady() && IsActive("ElTristana.JungleClear.Q"))
-            {
-                spells[Spells.Q].Cast();
             }
         }
 
         private static void OnLaneClear()
         {
+#if false
             if (IsActive("ElTristana.LaneClear.Tower"))
             {
                 foreach (var tower in ObjectManager.Get<Obj_AI_Turret>())
@@ -524,8 +533,8 @@
                         spells[Spells.E].Cast(tower);
                     }
                 }
-            }
-
+        }
+#endif
             var minions = MinionManager.GetMinions(
                 ObjectManager.Player.ServerPosition,
                 spells[Spells.E].Range,
@@ -537,8 +546,20 @@
             {
                 return;
             }
+            /*
+                var minions = MinionManager.GetMinions(player.Position, Q.Range, MinionTypes.All);
+                if (minions == null || minions.Count == 0)
+                    return;
 
-            if (spells[Spells.E].IsReady() && IsActive("ElTristana.LaneClear.E") && minions.Count > 2
+                // Q 사거리내 미니언이 11마리 이상 있고, AA+W Damage로 죽일 수 있는 미니언이 2마리 이상 있을때 기술 발동
+                if ((minions.Count > 10))
+                {
+                    Entry.PrintChat("Case W: LaneClearMode");
+                    W.Cast();
+                    Orbwalking.ResetAutoAttackTimer();
+                }
+    */
+            if (spells[Spells.E].IsReady() && IsActive("ElTristana.LaneClear.E") && minions.Count > 10
                 && Player.ManaPercent > Menu.Item("ElTristana.LaneClear.E.Mana").GetValue<Slider>().Value)
             {
                 foreach (var minion in
@@ -583,6 +604,7 @@
                         OnCombo();
                         break;
                     case Orbwalking.OrbwalkingMode.LaneClear:
+                        OnHarass();
                         OnLaneClear();
                         OnJungleClear();
                         break;
@@ -624,7 +646,7 @@
             return damage;
         }
 
-        #endregion
+#endregion
     }
 
     internal class DamageIndicator
@@ -701,6 +723,7 @@
                     }
                 }
             }
+
         }
     }
 }
