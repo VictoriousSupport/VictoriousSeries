@@ -153,7 +153,7 @@ namespace JinxsSupport.Plugins
         {
             try
             {
-                Menu = new Menu("Victorious Alistar", "ElAlistar", true);
+                Menu = new Menu("Victorious Alistar", "ElAlistar", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow); 
 
                 var targetselectorMenu = new Menu("Target Selector", "Target Selector");
                 {

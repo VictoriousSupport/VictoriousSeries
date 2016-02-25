@@ -39,7 +39,6 @@ namespace JinxsSupport.Plugins
         #region Load() Function
         public void Load()
         {
-            BardMenu = new Menu("Victorious Bard", "dz191.bard", true);
             spells[SpellSlot.Q].SetSkillshot(0.25f, 65f, 1600f, false, SkillshotType.SkillshotLine);
             spells[SpellSlot.R].SetSkillshot(0.5f, 325, 1800, false, SkillshotType.SkillshotCircle);
 
@@ -50,6 +49,8 @@ namespace JinxsSupport.Plugins
         #region CreateMenu() Function
         public void CreateMenu()
         {
+            BardMenu = new Menu("Victorious Bard", "dz191.bard", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
+
             var OrbwalkerMenu = new Menu("Orbwalker", "dz191.bard.orbwalker");
             BardOrbwalker = new Orbwalking.Orbwalker(OrbwalkerMenu);
             BardMenu.AddSubMenu(OrbwalkerMenu);

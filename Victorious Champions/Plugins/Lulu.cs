@@ -104,7 +104,7 @@ namespace JinxsSupport.Plugins
         public void CreateMenu()
         {
             //Menu instance
-            _menu = new Menu("Victorious Lulu", Player.ChampionName, true);
+            _menu = new Menu("Victorious Lulu", Player.ChampionName, true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
             //Orbwalker
             Menu orbwalkerMenu = new Menu("Orbwalker", "Orbwalker");
             _orbwalker = new Orbwalking.Orbwalker(orbwalkerMenu);

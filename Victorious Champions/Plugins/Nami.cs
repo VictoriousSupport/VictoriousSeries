@@ -87,7 +87,7 @@ namespace JinxsSupport.Plugins
         #region CreateMenu
         public void CreateMenu()
         {
-            _menu = new Menu("Victorious Nami", "menu", true);
+            _menu = new Menu("Victorious Nami", "menu", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
 
             //ElNamiReborn.Orbwalker
             var orbwalkerMenu = new Menu("Orbwalker", "orbwalker");

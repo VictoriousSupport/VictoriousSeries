@@ -59,7 +59,7 @@ namespace JinxsSupport.Plugins
 
             LoadSpellData();
 
-            config = new Menu("Victorious Thresh", "Jinx's Thresh", true);
+            config = new Menu("Victorious Thresh", "Jinx's Thresh", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
 
             //OrbWalk
             Orbwalker = new Orbwalking.Orbwalker(config.SubMenu("Orbwalking"));

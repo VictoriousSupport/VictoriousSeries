@@ -62,7 +62,7 @@ namespace JinxsSupport.Plugins
         #region CreateMenu() Function
         public void CreateMenu()
         {
-            Config = new Menu("Victorious Sivir", "Sivir", true);
+            Config = new Menu("Victorious Sivir", "Sivir", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);  
             Config.AddSubMenu(new Menu("Orbwalking", "Orbwalking"));
 
             var targetSelectorMenu = new Menu("Target Selector", "Target Selector");
