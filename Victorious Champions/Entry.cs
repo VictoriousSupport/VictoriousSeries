@@ -143,17 +143,23 @@ namespace JinxsSupport
                     }
                 }
 
-#if false       // 해결 필요!
+#if true       // 동작 확인 필요
                 Menu rootMenu = Menu.GetMenu("LeagueSharp.Common", "LeagueSharp.Common");
+                //rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex // 해당값을 읽어올때
                 if (rootMenu != null)
                 {
+                    string strMode = Enum.GetName(typeof(TargetingMode), rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex);
+                    PrintChat(string.Format("Current Targeting Mode: {0}", strMode));
+
                     if (Player.CharData.BaseSkinName.ToLower() == "sivir" ||
                         Player.CharData.BaseSkinName.ToLower() == "thresh" ||
                         Player.CharData.BaseSkinName.ToLower() == "tristana")
                     {
-                        rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode))));
-                        //.GetValue<StringList>()
-                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.LessAttack);
+                        if (rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex != (int)TargetingMode.LessAttack)
+                        {
+                            rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode)), (int)TargetingMode.LessAttack));
+                            PrintChat(string.Format("Targeting Mode Changed: {0}", Enum.GetName(typeof(TargetingMode), rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex)));
+                        }
                     }
                     else if (Player.CharData.BaseSkinName.ToLower() == "bard" ||
                             Player.CharData.BaseSkinName.ToLower() == "alistar" ||
@@ -161,13 +167,16 @@ namespace JinxsSupport
                             Player.CharData.BaseSkinName.ToLower() == "nami" ||
                             Player.CharData.BaseSkinName.ToLower() == "soraka")
                     {
-                        //rootMenu.Item("TargetingMode").SetValue(TargetingMode.LessCast);
-                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.LessCast);
+                        if (rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex != (int)TargetingMode.LessCast)
+                        {
+                            rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode)), (int)TargetingMode.LessCast));
+                            PrintChat(string.Format("Setup Targeting Mode: {0}", Enum.GetName(typeof(TargetingMode), rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex)));
+                        }
                     }
                     else
                     {
-                        //rootMenu.Item("TargetingMode").SetValue(TargetingMode.AutoPriority);
-                        rootMenu.Item("TargetingMode").SetTag((int)TargetingMode.AutoPriority);
+                        rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode)), (int)TargetingMode.AutoPriority));
+                        PrintChat(string.Format("Default Targeting Mode: {0}", Enum.GetName(typeof(TargetingMode), rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex)));
                     }
                 }
 #endif
