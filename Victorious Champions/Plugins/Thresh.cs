@@ -24,6 +24,7 @@ using LeagueSharp.Common;
 using SharpDX;
 using Color = System.Drawing.Color;
 using System.Collections.Generic;
+using SPrediction;
 
 namespace JinxsSupport.Plugins
 {
@@ -63,6 +64,7 @@ namespace JinxsSupport.Plugins
 
             //OrbWalk
             Orbwalker = new Orbwalking.Orbwalker(config.SubMenu("Orbwalking"));
+            SPrediction.Prediction.Initialize(config);                  // SPreditcion
 
             //Target selector
             var TargetSelectorMenu = new Menu("Target Selector", "Target Selector");
@@ -79,7 +81,7 @@ namespace JinxsSupport.Plugins
                     Qmenu.AddItem(new MenuItem("C-UseQ", "Use Q", true).SetValue(true));
                     Qmenu.AddItem(new MenuItem("C-UseQ2", "Use Auto Q2", true).SetValue(false));
                     Qmenu.AddItem(new MenuItem("minGrab", "Min Range Grab", true).SetValue(new Slider(450, 125, (int)Q.Range)));            // by Jinx
-                    Qmenu.AddItem(new MenuItem("Predict", "Set Predict", true).SetValue(new StringList(new[] { "Common", "OKTW" }, 1)));
+                    Qmenu.AddItem(new MenuItem("Predict", "Set Predict", true).SetValue(new StringList(new[] { "SPrediction", "OKTW" }, 1)));
                     foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                         Qmenu.SubMenu("Q Enable").AddItem(new MenuItem("GrabSelect" + enemy.ChampionName, enemy.ChampionName).SetValue(true));    // by Jinx
 
@@ -142,7 +144,6 @@ namespace JinxsSupport.Plugins
                 Miscmenu.AddItem(new MenuItem("UseEGapCloser", "Use E On Gap Closer", true).SetValue(true));
                 Miscmenu.AddItem(new MenuItem("UseQInterrupt", "Use Q On Interrupt", true).SetValue(false));
                 Miscmenu.AddItem(new MenuItem("UseEInterrupt", "Use E On Interrupt", true).SetValue(true));
-                Miscmenu.AddItem(new MenuItem("DebugMode", "Debug Mode", true).SetValue(false));
 
                 var EscapeMenu = new Menu("Block Enemy Escape Skills", "Block Enemy Escape Skills");
                 {
@@ -167,7 +168,8 @@ namespace JinxsSupport.Plugins
 
                 config.AddSubMenu(Drawingmenu);
             }
-            config.AddItem(new MenuItem("PermaShow", "PermaShow", true).SetShared().SetValue(true)).ValueChanged += (s, args) => {
+            config.AddItem(new MenuItem("PermaShow", "PermaShow", true).SetShared().SetValue(true)).ValueChanged += (s, args) => 
+            {
                 if (args.GetNewValue<bool>())
                 {
                     config.Item("ComboActive", true).Permashow(true, "Combo", SharpDX.Color.Aqua);
@@ -213,9 +215,9 @@ namespace JinxsSupport.Plugins
             E = new Spell(SpellSlot.E, 450);
             R = new Spell(SpellSlot.R, 420);
 
-            Q.SetSkillshot(0.5f, 65f, 1900f, true, SkillshotType.SkillshotLine);
-            W.SetSkillshot(0.2f, 10, float.MaxValue, false, SkillshotType.SkillshotCircle);
-            E.SetSkillshot(0.25f, 50, float.MaxValue, false, SkillshotType.SkillshotLine);
+            Q.SetSkillshot(0.5f, 65f, 1900f, true, LeagueSharp.Common.SkillshotType.SkillshotLine);
+            W.SetSkillshot(0.2f, 10, float.MaxValue, false, LeagueSharp.Common.SkillshotType.SkillshotCircle);
+            E.SetSkillshot(0.25f, 50, float.MaxValue, false, LeagueSharp.Common.SkillshotType.SkillshotLine);
         }
 
         static void Combo()
@@ -334,38 +336,6 @@ namespace JinxsSupport.Plugins
 
         #region Logic Q
 
-        public static bool CastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = Q;
-            var OKTWPlayer = Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            if (poutput2.Hitchance >= hitChance)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
-        }
-
         static void CastQ(Obj_AI_Hero target)
         {
             if (!Q.IsReady() || target == null || Helper.EnemyHasShield(target) || !target.IsValidTarget())
@@ -390,18 +360,23 @@ namespace JinxsSupport.Plugins
                             {
                                 var b = Q.GetPrediction(target);
 
-                                if (b.Hitchance >= HitChance.High &&
-                                    Player.Distance(target.ServerPosition) < Q.Range &&
-                                    Player.Distance(target.ServerPosition) > minGrab)       // by Jinx
+                                if (b.Hitchance >= HitChance.High && Player.Distance(target.ServerPosition) < Q.Range && Player.Distance(target.ServerPosition) > minGrab)       // by Jinx
                                 {
 
                                     foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>())
                                     {
-                                        if (enemy.Team != Player.Team && target != null
-                                            && config.Item("GrabSelect" + enemy.ChampionName).GetValue<bool>() && Q.IsReady()
-                                            && target.ChampionName == enemy.ChampionName && Player.Spellbook.GetSpell(SpellSlot.Q).Name == "ThreshQ")
+                                        if (enemy.Team != Player.Team && target != null &&
+                                            config.Item("GrabSelect" + enemy.ChampionName).GetValue<bool>() && Q.IsReady() &&
+                                            target.ChampionName == enemy.ChampionName && Player.Spellbook.GetSpell(SpellSlot.Q).Name == "ThreshQ")
                                         {
-                                            Q.Cast(target);
+                                            try
+                                            {
+                                                Q.SPredictionCast(target, HitChance.VeryHigh);
+                                            }
+                                            catch (Exception exception)
+                                            {
+                                                Console.WriteLine(exception);
+                                            }
                                         }
                                     }
 
@@ -414,8 +389,7 @@ namespace JinxsSupport.Plugins
                         #region OKTW Predict2
                         case 1:
                             {
-                                if (Player.Distance(target.ServerPosition) < Q.Range &&
-                                    Player.Distance(target.ServerPosition) > minGrab)       // by Jinx
+                                if (Player.Distance(target.ServerPosition) < Q.Range - 50 && Player.Distance(target.ServerPosition) > minGrab)       // by Jinx
                                 {
                                     foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>())
                                     {
@@ -423,7 +397,8 @@ namespace JinxsSupport.Plugins
                                             && config.Item("GrabSelect" + enemy.ChampionName).GetValue<bool>() && Q.IsReady()
                                             && target.ChampionName == enemy.ChampionName && Player.Spellbook.GetSpell(SpellSlot.Q).Name == "ThreshQ")
                                         {
-                                            CastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
+                                            //CastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
+                                            Entry.OKTWCast_SebbyLib(Q, target, false);
                                         }
                                     }
 
@@ -521,43 +496,6 @@ namespace JinxsSupport.Plugins
 
         #region Logic W
 
-        // 렌턴에 OKTW 알고리즘 적용
-        public static bool CastWOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-
-            if (!W.IsReady())
-                return false;
-
-            var spell = W;
-            var OKTWPlayer = Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            if (poutput2.Hitchance >= hitChance)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
-        }
-
         static void CastW(Vector3 Position)
         {
             if (!W.IsReady() || Player.Distance(Position) > W.Range)
@@ -592,7 +530,7 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        // 가장 멀리 있는 아군을 찾는 로직 (1500 범위 내)
+        // 가장 멀리 있는 아군을 찾는 로직 (1750 범위 내)
         static Obj_AI_Hero GetFurthestAlly(Obj_AI_Hero target)
         {
             Obj_AI_Hero Wtarget = null;
@@ -600,7 +538,7 @@ namespace JinxsSupport.Plugins
 
             foreach (Obj_AI_Hero hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsMe && !x.IsDead))
             {
-                if (Player.Distance(hero.Position) <= 1500 &&
+                if (Player.Distance(hero.Position) <= 1750 &&
                     hero.Distance(target.Position) > Player.Distance(target.Position))
                 {
                     var temp = Player.Distance(hero.Position);
@@ -708,7 +646,6 @@ namespace JinxsSupport.Plugins
 
         static void SafeLanternKeybind()
         {
-
             bool Catched = IsPulling().Item1;
             Obj_AI_Hero CatchedQtarget = IsPulling().Item2;
             Obj_AI_Hero Wtarget = null;
@@ -722,11 +659,7 @@ namespace JinxsSupport.Plugins
                 {
                     if (Player.Distance(Wtarget.Position) <= W.Range)
                     {
-                        /*
-                        var Pos = W.GetPrediction(Wtarget).CastPosition;
-                        CastW(Pos);
-                        */
-                        CastWOKTW(Wtarget, OKTWPrediction.HitChance.High);
+                        Entry.OKTWCast_SebbyLib(W, Wtarget, false);
                     }
                     else if (Player.Distance(Wtarget.Position) > W.Range)
                     {
@@ -737,10 +670,7 @@ namespace JinxsSupport.Plugins
             }
             else // 만약 Q1이 맞지 않은 상태에서 T키를 누르면, 1500 범위내 가장 체력 낮은 녀석에게 준다.
             {
-                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>()
-                    .Where(x => x.IsAlly && !x.IsDead && !x.IsMe &&
-                    Player.Distance(x.Position) < 1500 &&
-                    !x.HasBuff("Recall")))
+                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsDead && !x.IsMe && Player.Distance(x.Position) < 1750 && !x.HasBuff("Recall")))
                 {
                     var temp = hero.HpPercents();
 
@@ -780,8 +710,7 @@ namespace JinxsSupport.Plugins
                 {
                         if (Player.Distance(Wtarget.Position) <= W.Range)
                         {
-                            var Pos = W.GetPrediction(Wtarget).CastPosition;
-                            CastW(Pos);
+                            Entry.OKTWCast_SebbyLib(W, Wtarget, false);
                         }
                         else
                         {
@@ -939,29 +868,6 @@ namespace JinxsSupport.Plugins
             return status;
         }
 
-        static bool Debug()
-        {
-            return config.IsBool("DebugMode");
-        }
-
-        public static void Debug(string s)
-        {
-            if (Debug())
-            {
-                Console.WriteLine("" + s);
-            }
-        }
-
-        static void Debug(Vector3 pos)
-        {
-            if (!Debug())
-                return;
-
-            Drawing.OnDraw += delegate(EventArgs args)
-            {
-                Render.Circle.DrawCircle(pos, 150, System.Drawing.Color.Yellow);
-            };
-        }
 
         #endregion 
 
@@ -1023,7 +929,7 @@ namespace JinxsSupport.Plugins
                     E.IsReady())
                 {
                     Push(gapcloser.Sender);
-                    Game.PrintChat("<font color='#3492EB'>Jinx's Thresh:</font> <font color='#FFFFFF'>AntiGapClose=Type_Ally</font>");
+                    //Game.PrintChat("<font color='#3492EB'>Jinx's Thresh:</font> <font color='#FFFFFF'>AntiGapClose=Type_Ally</font>");
                 }
             }
         }
@@ -1147,8 +1053,6 @@ namespace JinxsSupport.Plugins
                     Player.Distance(args.End) > E.Range &&
                     config.IsBool("BlockEscapeE"))
             {
-                Debug(args.End);
-                Debug("EscapeE");
                 Pull(sender);
             }
                 /*
@@ -1172,11 +1076,7 @@ namespace JinxsSupport.Plugins
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
-            if (Debug() && sender.IsEnemy && sender is Obj_AI_Hero)
-            {
-                var _sender = sender as Obj_AI_Hero;
-                Console.WriteLine(": " + args.SData.Name + " - " + _sender.ChampionName + _sender.GetSpellSlot(args.SData.Name));
-            }
+
         }
 
         #endregion

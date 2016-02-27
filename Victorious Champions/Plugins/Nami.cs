@@ -257,39 +257,7 @@ namespace JinxsSupport.Plugins
         }
 
         #endregion
-        public static bool QCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = spells[Spells.Q];// Q;
-            var OKTWPlayer = ObjectManager.Player;
 
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            // 단일 타겟일때는 VeryHigh, 다중 타겟을때는 High 기준으로 기술 시전
-            if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-
-            return false;
-        }
         #region Harass
 
         static void Harass(Obj_AI_Base target)
@@ -308,7 +276,8 @@ namespace JinxsSupport.Plugins
             if (useQ && spells[Spells.Q].IsReady())
             {
                 var harassQtarget = TargetSelector.GetTarget(spells[Spells.Q].Range, TargetSelector.DamageType.Magical);
-                QCastOKTW(harassQtarget, OKTWPrediction.HitChance.VeryHigh);       // by Jinx
+                if (harassQtarget != null)
+                    Entry.OKTWCast_SebbyLib(spells[Spells.Q], harassQtarget, false);
             }
 
             if (useE && spells[Spells.E].IsReady())
@@ -350,8 +319,9 @@ namespace JinxsSupport.Plugins
 
             if (useQ && spells[Spells.Q].IsReady())
             {
-                var harassQtarget = TargetSelector.GetTarget(spells[Spells.Q].Range, TargetSelector.DamageType.Magical);
-                QCastOKTW(harassQtarget, OKTWPrediction.HitChance.VeryHigh);       // by Jinx
+                var comboQtarget = TargetSelector.GetTarget(spells[Spells.Q].Range, TargetSelector.DamageType.Magical);
+                if (comboQtarget != null)
+                    Entry.OKTWCast_SebbyLib(spells[Spells.Q], comboQtarget, false);
             }
 
             if (useE && spells[Spells.E].IsReady())

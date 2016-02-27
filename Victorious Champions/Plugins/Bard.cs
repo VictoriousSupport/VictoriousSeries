@@ -39,8 +39,8 @@ namespace JinxsSupport.Plugins
         #region Load() Function
         public void Load()
         {
-            spells[SpellSlot.Q].SetSkillshot(0.25f, 65f, 1600f, false, SkillshotType.SkillshotLine);
-            spells[SpellSlot.R].SetSkillshot(0.5f, 325, 1800, false, SkillshotType.SkillshotCircle);
+            spells[SpellSlot.Q].SetSkillshot(0.25f, 65f, 1600f, false, LeagueSharp.Common.SkillshotType.SkillshotLine);
+            spells[SpellSlot.R].SetSkillshot(0.5f, 325, 1800, false, LeagueSharp.Common.SkillshotType.SkillshotCircle);
 
             Entry.PrintChat("<font color=\"#FFCC66\" >Bard</font>");
         }
@@ -107,10 +107,8 @@ namespace JinxsSupport.Plugins
                     DontWMenu.AddItem(new MenuItem("dz191.bard.wtarget.healthpercent", "Health % for W").SetValue(new Slider(25, 1)));
                     miscMenu.AddSubMenu(DontWMenu);
                 }
-
-                miscMenu.AddItem(new MenuItem("dz191.bard.misc.sep1", "                     Q - Cosmic Binding          "));
-                miscMenu.AddItem(new MenuItem("dz191.bard.misc.distance", "Calculation distance").SetValue(new Slider(250, 100, 450)));
-                miscMenu.AddItem(new MenuItem("dz191.bard.misc.accuracy", "Accuracy").SetValue(new Slider(20, 1, 50)));
+                miscMenu.AddItem(new MenuItem("dz191.bard.misc.distance", "Q Tune: Calculation Distance").SetValue(new Slider(250, 100, 450)));
+                miscMenu.AddItem(new MenuItem("dz191.bard.misc.accuracy", "Q Tune: Accuracy").SetValue(new Slider(20, 1, 50)));
                 miscMenu.AddItem(new MenuItem("dz191.bard.Drawings.Q", "Draw Q range").SetValue(true));
                 BardMenu.AddSubMenu(miscMenu);
             }
@@ -159,9 +157,15 @@ namespace JinxsSupport.Plugins
                     if (spells[SpellSlot.Q].IsReady() && GetItemValue<bool>(string.Format("dz191.bard.{0}.useq", BardOrbwalker.ActiveMode.ToString().ToLower())) &&
                         ComboTarget.IsValidTarget())
                     {
-                        if(!QCastOKTW(OKTWTarget, OKTWPrediction.HitChance.VeryHigh))           // 일단 확정 스턴 기술 시도, 실패시 기존 로직 진행
-                            HandleQ(ComboTarget);                                               
-                    }
+                        if (CheckWall(OKTWTarget))
+                        {
+                            
+                            if (Entry.OKTWCast_SebbyLib(spells[SpellSlot.Q], OKTWTarget, false))
+                                Entry.PrintChat("OKTWCast_SebbyLib Combo Q - Wall");
+                        }
+                        else
+                            HandleQ(ComboTarget);
+                     }
 
                     if (GetItemValue<bool>(string.Format("dz191.bard.{0}.usew", BardOrbwalker.ActiveMode.ToString().ToLower())))
                     {
@@ -173,7 +177,17 @@ namespace JinxsSupport.Plugins
                     if (spells[SpellSlot.Q].IsReady() && GetItemValue<bool>(string.Format("dz191.bard.{0}.useq", BardOrbwalker.ActiveMode.ToString().ToLower())) &&
                         OKTWTarget.IsValidTarget() && GetItemValue<bool>(string.Format("dz191.bard.qtarget.{0}", OKTWTarget.ChampionName.ToLower())))
                     {
-                        QCastOKTW(OKTWTarget, OKTWPrediction.HitChance.VeryHigh);
+                        if (CheckWall(OKTWTarget))
+                        {
+                            if (Entry.OKTWCast_SebbyLib(spells[SpellSlot.Q], OKTWTarget, false))
+                                Entry.PrintChat("OKTWCast_SebbyLib Harass Q - Wall");
+                        }
+                        else
+                        {
+                            HandleQ(ComboTarget);
+                        }
+                            
+                            
                     }
                     break;
             }
@@ -182,41 +196,6 @@ namespace JinxsSupport.Plugins
 
             if (GetItemValue<KeyBind>("dz191.bard.combo.user").Active)  CastR();
 
-        }
-
-        public static bool QCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = spells[SpellSlot.Q];
-            var OKTWPlayer = ObjectManager.Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = true;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            if (poutput2.Hitchance >= hitChance)
-            {
-                // 확정스턴 확률 기대: 주변에 벽이 있거나, 2명이상 맞거나...
-                if (CheckWall(target) || poutput2.AoeTargetsHitCount > 1)
-                    return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
         }
 
         private static bool CheckWall(Obj_AI_Hero target)
@@ -250,43 +229,11 @@ namespace JinxsSupport.Plugins
 
             var targetR = TargetSelector.GetTarget(spells[SpellSlot.R].Range, TargetSelector.DamageType.Magical);
             int EnemiesCount = BardMenu.Item("dz191.bard.combo.usercount").GetValue<Slider>().Value;
+            // OKTW 에게 멀티타겟 맞추기를 기대하는 것보다, 사전에 맞을 적의 숫자를 확인하고 그냥 기술을 시전하는 것이 더 바람직함.
             if (targetR.IsValidTarget(spells[SpellSlot.R].Range) && GetRCastEnemies(targetR) >= EnemiesCount)
             {
-                RCastOKTW(targetR, OKTWPrediction.HitChance.VeryHigh, EnemiesCount);
+                Entry.OKTWCast_SebbyLib(spells[SpellSlot.R], targetR, true);
             }
-        }
-
-        public static bool RCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance, int minCount)
-        {
-            var spell = spells[SpellSlot.R];
-            var OKTWPlayer = ObjectManager.Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = true;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            if (poutput2.Hitchance >= hitChance)
-            {
-                if (poutput2.AoeTargetsHitCount >= minCount)
-                    return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
         }
 
         private static int GetRCastEnemies(Obj_AI_Hero target)
@@ -342,9 +289,9 @@ namespace JinxsSupport.Plugins
 
                 var BeamStartPositions = new List<Vector3>()
                     {
-                        QPrediction.CastPosition,
-                        QPrediction.UnitPosition,
-                        comboTarget.ServerPosition,
+                        QPrediction.CastPosition,                  
+                        QPrediction.UnitPosition,                  
+                        comboTarget.ServerPosition,                 
                         comboTarget.Position
                     };
 
@@ -356,15 +303,13 @@ namespace JinxsSupport.Plugins
                 var PositionsList = new List<Vector3>();
                 var CollisionPositions = new List<Vector3>();
 
-                foreach (var position in BeamStartPositions)
+                foreach (var position in BeamStartPositions)        // 포지션 4~5개를 각각 체크
                 {
-                    var collisionableObjects = spells[SpellSlot.Q].GetCollision(position.To2D(),
-                        new List<Vector2>() { position.Extend(PlayerPosition, -QPushDistance).To2D() });
+                    var collisionableObjects = spells[SpellSlot.Q].GetCollision(position.To2D(), new List<Vector2>() { position.Extend(PlayerPosition, -QPushDistance).To2D() });
 
                     if (collisionableObjects.Any())
                     {
-                        if (collisionableObjects.Any(h => h is Obj_AI_Hero) &&
-                            (collisionableObjects.All(h => h.IsValidTarget())))
+                        if (collisionableObjects.Any(h => h is Obj_AI_Hero) && (collisionableObjects.All(h => h.IsValidTarget())))
                         {
                             spells[SpellSlot.Q].Cast(QPrediction.CastPosition);
                             break;

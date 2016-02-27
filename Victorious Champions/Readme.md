@@ -58,6 +58,24 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.3.6]
+    - SebbyLib 적용: OKTW Predtion의 유지보수가 필요없이 업데이트 되는 라이브러리를 사용. 
+	- SebbyLib OKTW Predition 적용 챔피언
+	  - Tresh Q/W
+	  - Bard Q (with Wall), R (Circle)
+	  - Soraka Q (Circle), E (콤보시 CC 걸려있는 타겟에 우선 적용하는 것으로 변경)
+	  - Lulu Q
+	  - Nami Q
+	  - Sivir Q
+	- SPrediction 적용: 기존 Common Prediction 개선
+	  - Tresh Q 에 시범적용 (OKTW/SPrediction 선택 가능)
+	- Sivir E 로 막을 수 있는 기술 별도 표시 
+	  - 실제 논타겟 블럭킹은 ezVade 에서 수행하도록 함.
+	  - 여기는 .unit 기반 기술만 막는 것이 맞음. (ezVade 에서 막지 못하는 스킬 막기)
+  - [6.3.3.3]
+    - ADC 챔프의 경우 자동으로 LessAttack 모드로 변경, Support Mode 사라짐
+	- AP/Support 챔프의 경우 자동으로 LessCast 모드로 변경, Support Mode 활성화
+	- 그 외의 경우에는 Auto Priority 로 변경됨
   - [6.3.3.1]
     - 챔피언에 맞춰 타겟모드 자동 설정 (ADC=LessAttack / AP=LessCast)
     - **Tristana**

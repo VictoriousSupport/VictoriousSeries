@@ -41,11 +41,17 @@
     <Reference Include="LeagueSharp.Common">
       <HintPath>C:\Data.path\LeagueSharp\System\LeagueSharp.Common.dll</HintPath>
     </Reference>
+    <Reference Include="SebbyLib">
+      <HintPath>C:\Data.path\LeagueSharp\System\SebbyLib.dll</HintPath>
+    </Reference>
     <Reference Include="SharpDX">
       <HintPath>C:\Data.path\LeagueSharp\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
       <HintPath>C:\Data.path\LeagueSharp\System\SharpDX.Direct3D9.dll</HintPath>
+    </Reference>
+    <Reference Include="SPrediction">
+      <HintPath>C:\Data.path\LeagueSharp\System\SPrediction.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -59,7 +65,6 @@
   <ItemGroup>
     <Compile Include="Entry.cs" />
     <Compile Include="IPlugin.cs" />
-    <Compile Include="OKTWPrediction.cs" />
     <Compile Include="Plugins\Alistar.cs" />
     <Compile Include="Plugins\Bard.cs" />
     <Compile Include="Plugins\Leona.cs" />

@@ -35,6 +35,39 @@ namespace JinxsSupport.Plugins
         private static bool g_bWComboEnable = false;        // W Cast Combo Enable
         private static bool g_bWHarassEnable = false;       // W Cast Harass Enable
 
+        private static string[] CanBlockwithEDangerousSpells =          // 시비르와 모르가나 E로 막을수 있는 위험 기술들
+         {
+            "CurseoftheSadMummy",                   // 아무무 R
+            "InfernalGuardian",                     // 애니 R
+            "EnchantedCrystalArrow",                // 애쉬 R
+            "BardR",                                // 바드 R
+            "RocketGrab",                           // 블리츠 Q
+            "BraumRWrapper",                        // 브라움 R
+            "DianaArc",                             // 다이아나 Q
+            "DravenDoubleShot",                     // 드레이븐 E
+            "EliseHumanE",                          // 엘리스(인간) 고치 E
+            "EvelynnR",                             // 이블린 R
+            "CassiopeiaPetrifyingGaze",             // 카시오페아 R
+            "FizzMarinerDoom",                      // 피즈 R
+            "GalioIdolOfDurand",                    // 갈리오 R
+            "GragasR",                              // 그라가스 R
+            "GravesChargeShot",                     // 그브 R
+            "LeonaSolarFlare",                      // 레오나 R
+            "LeonaZenithBlade",                     // 레오나 E
+            "UFSlash",                              // 말파 R
+            "DarkBindingMissile",                   // 모르가나 Q
+            "NamiQ",                                // 나미 Q
+            "NautilusAnchorDrag",                   // 노틸러스 E
+            "RengarE",                              // 렝가 E
+            "SonaR",                                // 소나 R
+            "SwainShadowGrasp",                     // 스웨인 W
+            "ThreshQ",                              // 쓰레쉬 Q
+            "VarusR",                               // 바루스 R
+            "yasuoq3w",                             // 야스오 Q
+            "ZyraGraspingRoots",                    // 자이라 E
+            "zyrapassivedeathmanager"
+        };
+
         #region Load() Function
         public void Load()
         {
@@ -47,7 +80,7 @@ namespace JinxsSupport.Plugins
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E);
             R = new Spell(SpellSlot.R, 1000f);
-            Q.SetSkillshot(0.25f, 90f, 1350f, false, SkillshotType.SkillshotLine);
+            Q.SetSkillshot(0.25f, 90f, 1350f, false, LeagueSharp.Common.SkillshotType.SkillshotLine);
 
             nEBlockSpellList = new EShieldDB[20];
             bIniEShieldMenu = false;
@@ -105,37 +138,86 @@ namespace JinxsSupport.Plugins
                 bool EnableE = false;
                 bool EnableR = false;
 
+
                 if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableQ = true;
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} (*)", spellQ.Name)).SetValue(EnableQ));
+
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellQ.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} (*)", spellQ.Name)).SetValue(EnableQ)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} (*)", spellQ.Name)).SetValue(EnableQ));
                 }
                 else
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)).SetValue(EnableQ));
+                {
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellQ.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)).SetValue(EnableQ)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellQ.SData.Name, string.Format("Q: {0} ({1})", spellQ.Name, spellQ.SData.TargettingType)).SetValue(EnableQ));
+                }
+                    
 
-                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
+                if ((spellW.SData.TargettingType == SpellDataTargetType.Unit) || (spellW.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableW = true;
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} (*)", spellW.Name)).SetValue(EnableW));
+
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellW.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} (*)", spellW.Name)).SetValue(EnableW)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} (*)", spellW.Name)).SetValue(EnableW));
                 }
                 else
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)).SetValue(EnableW));
+                {
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellW.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)).SetValue(EnableW)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellW.SData.Name, string.Format("W: {0} ({1})", spellW.Name, spellW.SData.TargettingType)).SetValue(EnableW));
+                }
+                    
 
-                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
+                if ((spellE.SData.TargettingType == SpellDataTargetType.Unit) || (spellE.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableE = true;
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} (*)", spellE.Name)).SetValue(EnableE));
+
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellE.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} (*)", spellE.Name)).SetValue(EnableE)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} (*)", spellE.Name)).SetValue(EnableE));
                 }
                 else
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)).SetValue(EnableE));
+                {
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellE.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)).SetValue(EnableE)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellE.SData.Name, string.Format("E: {0} ({1})", spellE.Name, spellE.SData.TargettingType)).SetValue(EnableE));
+                }
+                
 
-                if ((spellQ.SData.TargettingType == SpellDataTargetType.Unit) || (spellQ.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
+                if ((spellR.SData.TargettingType == SpellDataTargetType.Unit) || (spellR.SData.TargettingType == SpellDataTargetType.SelfAndUnit))
                 {
                     EnableR = true;
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} (*)", spellR.Name)).SetValue(EnableR));
+
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellR.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} (*)", spellR.Name)).SetValue(EnableR)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} (*)", spellR.Name)).SetValue(EnableR));
                 }
                 else
-                    Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} ({1})", spellR.Name, spellR.SData.TargettingType)).SetValue(EnableR));
+                {
+                    var foundSpell = CanBlockwithEDangerousSpells.Find(x => spellR.SData.Name.ToLower() == x.ToLower());
+                    if (foundSpell != null)
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} ({1})", spellR.Name, spellR.SData.TargettingType)).SetValue(EnableR)).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.Yellow);
+                    else
+                        Config.SubMenu("CastE").SubMenu(enemy.ChampionName).AddItem(new MenuItem("Spell" + spellR.SData.Name, string.Format("R: {0} ({1})", spellR.Name, spellR.SData.TargettingType)).SetValue(EnableR));
+                }
+                    
 
                 nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellQ.SData.Name, EnableQ);
                 nEBlockSpellList[g_nTotalSpellCnt++] = new EShieldDB(spellW.SData.Name, EnableW);
@@ -219,8 +301,6 @@ namespace JinxsSupport.Plugins
                 if (!E.IsReady() || !sender.IsEnemy || sender.IsMinion || args.Target == null || !args.Target.IsMe || !sender.IsValid<Obj_AI_Hero>() || args.SData.Name == "TormentedSoil")
                     return;
 
-                //Console.WriteLine("Under Attack: '{0}'", args.SData.Name);
-
                 bool bFlag = false;
                 bool bEnable = false;       // 최종 스킬을 사용할지 말지
                 for (var i = 0; i < g_nTotalSpellCnt; i++)
@@ -232,6 +312,8 @@ namespace JinxsSupport.Plugins
                     }
 
                 if (!bFlag) return;
+
+                //"CurseoftheSadMummy" // Amumu R
 
                 var dmg = sender.GetSpellDamage(ObjectManager.Player, args.SData.Name);     // 예상 데미지 예측
                 double HpPercentage = (dmg * 100) / player.MaxHealth;                          // 예상 데미지% 예측 
@@ -335,7 +417,7 @@ namespace JinxsSupport.Plugins
                 var target = ObjectManager.Get<Obj_AI_Hero>().FirstOrDefault(enemy => enemy.IsEnemy && !enemy.IsDead && enemy.IsValidTarget(Q.Range) && enemy.Health < player.GetSpellDamage(enemy, SpellSlot.Q));
                 if (target != null)
                 {
-                    QCastOKTW(target);
+                    Entry.OKTWCast_SebbyLib(Q, target, false);
                     return true;
                 }
             }
@@ -355,40 +437,6 @@ namespace JinxsSupport.Plugins
                 return true;
         }
 
-        public static bool QCastOKTW(Obj_AI_Hero target)
-        {
-            var spell = Q;
-            var OKTWPlayer = player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            // 다중 타켓 모드 삭제: 이상동작을 일으킴
-            if (!predInput2.Aoe && poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-
-            return false;
-        }
-
         // Combo시 사용되는 Q Logic
         private static void ComboLogicQ()
         {
@@ -399,19 +447,19 @@ namespace JinxsSupport.Plugins
                 // 현재 타게팅에 관계없이 제일 먼저 Q 거리내 죽일 수 있는 녀석부터 먼저 죽임.
                 if (QCastKillSteal()) return;
 
-                // 타게팅이 없고, 사거리내 불능인 녀석이 있으면 Q 시전
+                // 타게팅이 없고, 사거리내 불능인 녀석이 있으면 우선적으로 Q 시전
                 if (player.Mana > QMANA)
                 {
                     foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range) && !OKTWCanMove(x)))
                     {
-                        QCastOKTW(enemy);
+                        Entry.OKTWCast_SebbyLib(Q, enemy, false);
                         Orbwalker.ForceTarget(enemy);
                         return;
                     }
                 }
 
                 // 타게팅에 Q 시전 
-                if (Q.IsReady()) QCastOKTW(t);
+                if (Q.IsReady()) Entry.OKTWCast_SebbyLib(Q, t, false);
 
             }
         }
@@ -425,7 +473,7 @@ namespace JinxsSupport.Plugins
                 // 한번의 시전으로 2명 이상 맞출 수 있으면 기술 시전, 챔피언이 Q사거리 끝선에 있어 무조건 2번 맞고 내려올 수 있을때
                 if ((player.CountEnemiesInRange(Q.Range) >= 2) && ((t.Distance(player)) >= 950f))
                 {
-                    if (QCastOKTW(t)) return;
+                    if (Entry.OKTWCast_SebbyLib(Q, t, false)) return;
                 }
             }
 

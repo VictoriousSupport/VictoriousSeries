@@ -357,42 +357,6 @@ namespace JinxsSupport.Plugins
         }
 
         /// <summary>
-        /// OKTW Q 함수
-        /// </summary>
-        public static bool QCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = _q;
-            var OKTWPlayer = Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotLine;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            // 단일 타겟일때는 VeryHigh, 다중 타겟을때는 High 기준으로 기술 시전
-            if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
-        }
-
-        /// <summary>
         /// 자동 수행 함수
         ///  - 킬스틸 함수는 좀 보완이 필요할 듯
         ///  
@@ -409,7 +373,7 @@ namespace JinxsSupport.Plugins
                     && (x.Distance(Player.Position) > x.Distance(pix.Position) ? 925 >= x.Distance(pix.Position): 925 >= x.Distance(Player.Position))
                     ))
                     {
-                        QCastOKTW(hero, OKTWPrediction.HitChance.VeryHigh);
+                        Entry.OKTWCast_SebbyLib(_q, hero, false);
                     }
             }
             #endregion
@@ -532,7 +496,7 @@ namespace JinxsSupport.Plugins
                 var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                 if (target != null && target.IsValidTarget())
                 {
-                    QCastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
+                    Entry.OKTWCast_SebbyLib(_q, target, false);
                 }
             }
 
@@ -579,7 +543,9 @@ namespace JinxsSupport.Plugins
                 {
                     var target = TargetSelector.GetTarget(_q.Range, TargetSelector.DamageType.Magical);
                     if (target != null && target.IsValidTarget())
-                        QCastOKTW(target, OKTWPrediction.HitChance.High);
+                    {
+                        Entry.OKTWCast_SebbyLib(_q, target, false);
+                    }
                 }
 
                 // Cast E

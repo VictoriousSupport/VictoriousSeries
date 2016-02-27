@@ -185,7 +185,53 @@ namespace JinxsSupport
                 Console.WriteLine("An error occurred: '{0}'", e);
             }
         }
- 
+
+        public static bool OKTWCast_SebbyLib(Spell QWER, Obj_AI_Hero target, bool MultiTarget)//, SebbyLib.Prediction.HitChance hitChance)
+        {
+            SebbyLib.Prediction.SkillshotType CoreType2 = SebbyLib.Prediction.SkillshotType.SkillshotLine;
+            bool aoe2 = false;
+
+            if (QWER.Type == SkillshotType.SkillshotCircle)
+            {
+                CoreType2 = SebbyLib.Prediction.SkillshotType.SkillshotCircle;
+                aoe2 = true;
+            }
+
+            if (QWER.Width > 80 && !QWER.Collision)         // 기술의 폭이 80 이상이고, 충돌이 일어나지 않는 기술이라면...
+                aoe2 = true;
+
+            if (MultiTarget && !QWER.Collision)             // 내가 이건 멀티타겟이라고 정의해버린 경우
+                aoe2 = true;
+
+            var predInput2 = new SebbyLib.Prediction.PredictionInput
+            {
+                Aoe = aoe2,
+                Collision = QWER.Collision,
+                Speed = QWER.Speed,
+                Delay = QWER.Delay,
+                Range = QWER.Range,
+                From = HeroManager.Player.ServerPosition,
+                Radius = QWER.Width,
+                Unit = target,
+                Type = CoreType2
+            };
+            var poutput2 = SebbyLib.Prediction.Prediction.GetPrediction(predInput2);
+
+            if (QWER.Speed != float.MaxValue && SebbyLib.OktwCommon.CollisionYasuo(HeroManager.Player.ServerPosition, poutput2.CastPosition))
+                return false;
+
+            if (poutput2.Hitchance >= SebbyLib.Prediction.HitChance.VeryHigh)
+            {
+                return QWER.Cast(poutput2.CastPosition);
+            }
+            else if (predInput2.Aoe && poutput2.AoeTargetsHitCount > 1 && poutput2.Hitchance >= SebbyLib.Prediction.HitChance.High && MultiTarget)
+            {
+                return QWER.Cast(poutput2.CastPosition);
+            }
+
+            return false;
+        }
+
         /// <summary>
         ///     Prints to the local chat.
         /// </summary>

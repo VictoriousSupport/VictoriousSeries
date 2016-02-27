@@ -218,18 +218,11 @@ namespace JinxsSupport.Plugins
 
             if (Menu.Item("useQGapcloser").GetValue<bool>() && unit.IsValidTarget(Q.Range) && Q.IsReady())
             {
-                //Q.Cast(unit, Packets);
-                QCastOKTW(unit, OKTWPrediction.HitChance.VeryHigh);
+                Entry.OKTWCast_SebbyLib(Q, unit, false);
             }
-
-            var cc = unit.HasBuffOfType(BuffType.Snare) ||
-                     unit.HasBuffOfType(BuffType.Suppression) || unit.HasBuffOfType(BuffType.Taunt) ||
-                     unit.HasBuffOfType(BuffType.Stun) || unit.HasBuffOfType(BuffType.Charm) ||
-                     unit.HasBuffOfType(BuffType.Fear);
-
-            if (Menu.Item("useEGapcloser").GetValue<bool>() && unit.IsValidTarget(E.Range) && E.IsReady() && cc)
+            if (Menu.Item("useEGapcloser").GetValue<bool>() && unit.IsValidTarget(E.Range) && E.IsReady())
             {
-                ECastOKTW(unit, OKTWPrediction.HitChance.VeryHigh);
+                Entry.OKTWCast_SebbyLib(E, unit, false);
             }
         }
 
@@ -242,21 +235,6 @@ namespace JinxsSupport.Plugins
             {
                 return;
             }
-            /*
-            if (
-                ObjectManager.Get<Obj_AI_Hero>()
-                    .Where(x => x.IsAlly && x.IsValidTarget(float.MaxValue, false) && !x.IsMe)  // by Jinx 나는 제외: && !x.IsMe  추가
-                    .Select(x => (int)x.Health / x.MaxHealth * 100)
-                    .Select(
-                        friendHealth =>
-                        new { friendHealth, health = Menu.Item("autoRPercent").GetValue<Slider>().Value })
-                    .Where(x => x.friendHealth <= x.health)
-                    .Select(x => x.friendHealth)
-                    .Any())
-            {
-                R.Cast(Packets);
-            }
-            */
 
             var minAllyHealth = Menu.Item("autoRPercent").GetValue<Slider>().Value;
             if (minAllyHealth < 1) return;
@@ -271,9 +249,6 @@ namespace JinxsSupport.Plugins
                     }
                 }
             }
-        
-
-
     }
 
         /// <summary>
@@ -356,20 +331,21 @@ namespace JinxsSupport.Plugins
 
             if (useQ && Q.IsReady())
             {
-                /*
-                if (Q.GetPrediction(target).Hitchance >= HitChance.High)
-                {
-                    Q.Cast(target, Packets);
-                }
-                */
-                QCastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
-
+                Entry.OKTWCast_SebbyLib(Q, target, false);
             }
 
             if (useE && E.IsReady())
             {
-                //E.Cast(target, Packets);
-                ECastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
+
+                var eTarget = HeroManager.Enemies.FirstOrDefault(hero => hero.IsValidTarget(E.Range) && hero.HasBuffOfType(BuffType.Snare) ||
+                                                            hero.HasBuffOfType(BuffType.Suppression) || hero.HasBuffOfType(BuffType.Taunt) ||
+                                                            hero.HasBuffOfType(BuffType.Stun) || hero.HasBuffOfType(BuffType.Charm) ||
+                                                            hero.HasBuffOfType(BuffType.Fear) || hero.IsStunned);
+
+                if (eTarget != null)
+                    Entry.OKTWCast_SebbyLib(E, eTarget, false);
+                else if (target.IsValidTarget(E.Range))
+                    Entry.OKTWCast_SebbyLib(E, target, false);
             }
         }
 
@@ -432,72 +408,6 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        public static bool QCastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = Q;
-            var OKTWPlayer = ObjectManager.Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            // 단일 타겟일때는 VeryHigh, 다중 타겟을때는 High 기준으로 기술 시전
-            if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
-        }
-
-        public static bool ECastOKTW(Obj_AI_Hero target, OKTWPrediction.HitChance hitChance)
-        {
-            var spell = E;
-            var OKTWPlayer = ObjectManager.Player;
-
-            OKTWPrediction.SkillshotType CoreType2 = OKTWPrediction.SkillshotType.SkillshotCircle;
-            bool aoe2 = false;
-
-            var predInput2 = new OKTWPrediction.PredictionInput
-            {
-                Aoe = aoe2,
-                Collision = spell.Collision,
-                Speed = spell.Speed,
-                Delay = spell.Delay,
-                Range = spell.Range,
-                From = OKTWPlayer.ServerPosition,
-                Radius = spell.Width,
-                Unit = target,
-                Type = CoreType2
-            };
-            var poutput2 = OKTWPrediction.Prediction.GetPrediction(predInput2);
-
-            if (spell.Speed != float.MaxValue && OKTWPrediction.CollisionYasuo(OKTWPlayer.ServerPosition, poutput2.CastPosition))
-                return false;
-
-            // 단일 타겟일때는 VeryHigh
-            if (poutput2.Hitchance >= OKTWPrediction.HitChance.VeryHigh)
-            {
-                return spell.Cast(poutput2.CastPosition);
-            }
-            return false;
-        }
-
         /// <summary>
         ///     The harass.
         /// </summary>
@@ -514,20 +424,15 @@ namespace JinxsSupport.Plugins
 
             if (useQ && Q.IsReady())
             {
-                /*
-                if (Q.GetPrediction(target).Hitchance > HitChance.High)
-                {
-                    Q.Cast(target, Packets);
-                }
-                */
-                QCastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
-
+                Entry.OKTWCast_SebbyLib(Q, target, false);
             }
 
             if (useE && E.IsReady())
             {
-                //E.Cast(target, Packets);
-                ECastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
+                var eTarget = HeroManager.Enemies.FirstOrDefault(hero => hero.IsValidTarget(E.Range) && hero.HasBuffOfType(BuffType.Snare) ||
+                                                            hero.HasBuffOfType(BuffType.Suppression) || hero.HasBuffOfType(BuffType.Stun) || hero.IsStunned || hero.IsImmovable );
+                if (eTarget != null)
+                    Entry.OKTWCast_SebbyLib(E, target, false);
             }
         }
 
@@ -562,9 +467,8 @@ namespace JinxsSupport.Plugins
                 return;
             }
 
-            //E.Cast(unit, Packets);
-            ECastOKTW(unit, OKTWPrediction.HitChance.VeryHigh);
-        }
+            Entry.OKTWCast_SebbyLib(E, unit, false);
+        }   
 
 
         #endregion
