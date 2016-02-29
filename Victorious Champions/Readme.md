@@ -24,7 +24,7 @@ Supported Champion
  - New R Logic: [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
 3. **Thresh**
  - Origin: Thresh - The ruler of the soul by Kaiser
- - Q Cast: OKTW Prediction
+ - Q Cast: OKTW Prediction / SPrediction
  - New W(Key) Logic: [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
 4. **Alistar**
  - Origin: ElAlistarReborn by jQuery
@@ -46,18 +46,22 @@ Supported Champion
  - New R Logic : [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
  - New E Shield Logic (Perfact): [Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
 8. **Tristana (ADC)**
- - Origin: Eltristana by by jQuery
+ - Origin: Eltristana by jQuery
  - Delete W Logic
  - Jungle Logic: OKTW 
  - New E Harass Logic:[Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
-9. Sona (WIP)
+9. **Blitzcrank**
+ - Origin: OKTW by Sebby
+10. Sona (WIP)
  - Origin: ElEasy by jQuery
-10. Leona (WIP)
+11. Leona (WIP)
  - Origin: ElEasy by jQuery
 
 
 Version History
 ---
+  - [6.3.4.0]
+    - Blitzcrank 챔피언 추가 (동작 미확인)
   - [6.3.3.6]
     - SebbyLib 적용: OKTW Predtion의 유지보수가 필요없이 업데이트 되는 라이브러리를 사용. 
 	- SebbyLib OKTW Predition 적용 챔피언

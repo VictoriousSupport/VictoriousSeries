@@ -8,6 +8,5 @@
         {
             CustomEvents.Game.OnGameLoad += Entry.OnLoad;
         }
-
     }
 }

@@ -31,6 +31,7 @@ namespace JinxsSupport
         E,
         R
     }
+
     /// <summary>
     ///     어셈블리 시작점, 챔피언 이름을 얻어 해당 플러그인을 적재함.
     /// </summary>
@@ -40,6 +41,8 @@ namespace JinxsSupport
         #region Delegates
         internal delegate T ObjectActivator<out T>(params object[] args);
         #endregion
+
+        public static int tickIndex = 0;
 
         #region Public Properties
         /// <summary>
@@ -179,6 +182,8 @@ namespace JinxsSupport
                         plugin.CreateMenu();                // 각 인터페이스 클래스(챔피언)는 CreateMenu() 항목을 가져야 함.
                     }
                 }
+
+                Game.OnUpdate += OnUpdate;
             }
             catch (Exception e)
             {
@@ -258,6 +263,26 @@ namespace JinxsSupport
                 }
             }
         }
-#endregion
+
+        public static bool LagFree(int offset)
+        {
+            if (tickIndex == offset)
+                return true;
+            else
+                return false;
+        }
+
+        private static void OnUpdate(EventArgs args)
+        {
+
+            tickIndex++;
+
+            if (tickIndex > 4)
+                tickIndex = 0;
+
+            if (!LagFree(0))
+                return;
+        }
+        #endregion
     }
 }
