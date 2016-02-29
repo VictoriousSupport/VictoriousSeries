@@ -444,17 +444,6 @@
 
         }
 
-        public static bool OKTWCanMove(Obj_AI_Hero target)
-        {
-            if (target.MoveSpeed < 50 || target.IsStunned || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) ||
-                target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || (target.IsChannelingImportantSpell() && !target.IsMoving))
-            {
-                return false;
-            }
-            else
-                return true;
-        }
-
         private static void OnHarass()      // Mixed Key (C)
         {
             var target = TargetSelector.GetTarget(spells[Spells.E].Range, TargetSelector.DamageType.Physical);
@@ -470,7 +459,7 @@
                     if (hero.IsEnemy)
                     {
                         var getEnemies = Menu.Item("ElTristana.E.On.Harass" + hero.CharData.BaseSkinName);
-                        if (getEnemies != null && getEnemies.GetValue<bool>() && !OKTWCanMove(hero))    // 아군 서폿이 CC 걸어준 경우에만 Harass... 아니면 말고...
+                        if (getEnemies != null && getEnemies.GetValue<bool>() && !SebbyLib.OktwCommon.CanMove(hero))    // 아군 서폿이 CC 걸어준 경우에만 Harass... 아니면 말고...
                         {
                             spells[Spells.E].Cast(hero);
                             Orbwalker.ForceTarget(hero);

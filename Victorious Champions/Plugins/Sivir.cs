@@ -425,18 +425,6 @@ namespace JinxsSupport.Plugins
             return false;
         }
 
-        // 움직일 수 없는 타겟을 확인하는 로직
-        public static bool OKTWCanMove(Obj_AI_Hero target)
-        {
-            if (target.MoveSpeed < 50 || target.IsStunned || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Fear) || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Knockup) ||
-                target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Taunt) || target.HasBuffOfType(BuffType.Suppression) || (target.IsChannelingImportantSpell() && !target.IsMoving))
-            {
-                return false;
-            }
-            else
-                return true;
-        }
-
         // Combo시 사용되는 Q Logic
         private static void ComboLogicQ()
         {
@@ -450,7 +438,8 @@ namespace JinxsSupport.Plugins
                 // 타게팅이 없고, 사거리내 불능인 녀석이 있으면 우선적으로 Q 시전
                 if (player.Mana > QMANA)
                 {
-                    foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range) && !OKTWCanMove(x)))
+                    
+                    foreach (var enemy in HeroManager.Enemies.Where(x => x.IsValidTarget(Q.Range) && !SebbyLib.OktwCommon.CanMove(x)))
                     {
                         Entry.OKTWCast_SebbyLib(Q, enemy, false);
                         Orbwalker.ForceTarget(enemy);
