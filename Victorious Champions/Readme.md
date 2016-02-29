@@ -52,6 +52,7 @@ Supported Champion
  - New E Harass Logic:[Jinx™](https://www.joduska.me/forum/user/1178097-mephistos/)
 9. **Blitzcrank**
  - Origin: OKTW by Sebby
+ - Q Cast: OKTW Prediction
 10. Sona (WIP)
  - Origin: ElEasy by jQuery
 11. Leona (WIP)
@@ -60,6 +61,11 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.4.1]
+    - 블리츠 Q 로직은 다른 어셈을 봐도 특별하게 무엇인가가 없음. 그냥 보고 땡기고 콤보넣는 기능이 전부임. 
+	- 미묘한 사거리 튜닝 진행
+	- SPrediction은 일단 적용하였다가 삭제함. Prediction은 OKTW
+	- Q Cast 미니언 출동을 막기 위한 테스트 코드 삽입 (6.3.4.2)
   - [6.3.4.0]
     - Blitzcrank 챔피언 추가 (동작 미확인)
   - [6.3.3.6]

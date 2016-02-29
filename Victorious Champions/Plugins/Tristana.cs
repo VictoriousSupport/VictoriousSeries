@@ -551,8 +551,7 @@
             if (spells[Spells.E].IsReady() && IsActive("ElTristana.LaneClear.E") && minions.Count > 10
                 && Player.ManaPercent > Menu.Item("ElTristana.LaneClear.E.Mana").GetValue<Slider>().Value)
             {
-                foreach (var minion in
-                    ObjectManager.Get<Obj_AI_Minion>().OrderByDescending(m => m.Health))
+                foreach (var minion in ObjectManager.Get<Obj_AI_Minion>().OrderByDescending(m => m.Health))
                 {
                     spells[Spells.E].Cast(minion);
                     Orbwalker.ForceTarget(minion);

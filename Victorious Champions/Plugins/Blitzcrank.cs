@@ -21,11 +21,11 @@ namespace JinxsSupport.Plugins
         #region Load() Function
         public void Load()
         {
-            Q = new Spell(SpellSlot.Q, 925);
+            Q = new Spell(SpellSlot.Q, 900);
             W = new Spell(SpellSlot.W);
             E = new Spell(SpellSlot.E, 475);
-            R = new Spell(SpellSlot.R, 600);
-            Q.SetSkillshot(0.25f, 70f, 1750f, true, SkillshotType.SkillshotLine);
+            R = new Spell(SpellSlot.R, 550);
+            Q.SetSkillshot(0.25f, 70f, 1800f, true, SkillshotType.SkillshotLine);
 
             foreach (var hero in ObjectManager.Get<Obj_AI_Hero>())
             {
@@ -161,7 +161,10 @@ namespace JinxsSupport.Plugins
                     Config.Item("grab" + t.ChampionName).GetValue<bool>() && Player.Distance(t.ServerPosition) > minGrab &&
                     !t.IsZombie )
                 {
-                    Entry.OKTWCast_SebbyLib(Q, t, false);
+                    // 테스트 코드
+                    var qpred = Q.GetPrediction(t);
+                    if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)            // 미니언 충돌을 막기 위한 코드
+                        Entry.OKTWCast_SebbyLib(Q, t, false);
                 }
                     
             }
