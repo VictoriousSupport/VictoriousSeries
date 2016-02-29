@@ -53,14 +53,22 @@ Supported Champion
 9. **Blitzcrank**
  - Origin: OKTW by Sebby
  - Q Cast: OKTW Prediction
-10. Sona (WIP)
+10. **Jhin (ADC)**
+ - Origin: OKTW by Sebby
+ - W/E Cast: OKTW Prediction
+ - W 기술 수정: 마나 소모 최소화, 콤보 기능으로 통합 (CC/AOE)
+ - R 로직 기본 계수 수정
+98. Sona (WIP)
  - Origin: ElEasy by jQuery
-11. Leona (WIP)
+99. Leona (WIP)
  - Origin: ElEasy by jQuery
 
 
 Version History
 ---
+  - [6.3.5.2]
+    - 진 (Jhin) 추가: OKTW 기본 로직 그대로 사용
+	- W 기술 수정: 전반적으로 Auto Harass 기능을 모두 Combo 에 접목시켜 마나 소모를 줄임.
   - [6.3.4.1]
     - 블리츠 Q 로직은 다른 어셈을 봐도 특별하게 무엇인가가 없음. 그냥 보고 땡기고 콤보넣는 기능이 전부임. 
 	- 미묘한 사거리 튜닝 진행

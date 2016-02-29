@@ -68,6 +68,7 @@
     <Compile Include="Plugins\Alistar.cs" />
     <Compile Include="Plugins\Bard.cs" />
     <Compile Include="Plugins\Blitzcrank.cs" />
+    <Compile Include="Plugins\Jhin.cs" />
     <Compile Include="Plugins\Leona.cs" />
     <Compile Include="Plugins\Lulu.cs" />
     <Compile Include="Plugins\Nami.cs" />
