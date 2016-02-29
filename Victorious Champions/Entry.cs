@@ -150,6 +150,7 @@ namespace JinxsSupport
                             Player.CharData.BaseSkinName.ToLower() == "alistar" ||
                             Player.CharData.BaseSkinName.ToLower() == "lulu" ||
                             Player.CharData.BaseSkinName.ToLower() == "nami" ||
+                            Player.CharData.BaseSkinName.ToLower() == "blitzcrank" ||
                             Player.CharData.BaseSkinName.ToLower() == "soraka")
                     {
                         if (rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex != (int)TargetingMode.LessCast)
