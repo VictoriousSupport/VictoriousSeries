@@ -444,7 +444,7 @@ namespace JinxsSupport.Plugins
         }
         private void SetMana()
         {
-            if ((Config.Item("manaDisable", true).GetValue<bool>() && (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)) || Player.HealthPercent < 20)
+            if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) || Player.HealthPercent < 20)
             {
                 QMANA = 0;
                 WMANA = 0;
@@ -487,6 +487,10 @@ namespace JinxsSupport.Plugins
 
         private void Drawing_OnDraw(EventArgs args)
         {
+
+            if (Config.Item("Draw_AA", true).GetValue<bool>())
+                Render.Circle.DrawCircle(ObjectManager.Player.Position, ObjectManager.Player.AttackRange + ObjectManager.Player.BoundingRadius, System.Drawing.Color.White, 1);
+
             if (Config.Item("qRange", true).GetValue<bool>())
             {
                 if (Config.Item("onlyRdy", true).GetValue<bool>())

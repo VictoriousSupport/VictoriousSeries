@@ -66,6 +66,10 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.5.4]
+    - 진 (Jhin) AA Drawing 추가
+	- 나미 R Cast 메뉴얼 키 적용 (T)
+	- 카타리나 추가 준비
   - [6.3.5.2]
     - 진 (Jhin) 추가: OKTW 기본 로직 그대로 사용
 	- W 기술 수정: 전반적으로 Auto Harass 기능을 모두 Combo 에 접목시켜 마나 소모를 줄임.

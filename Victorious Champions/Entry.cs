@@ -152,6 +152,7 @@ namespace JinxsSupport
                             Player.CharData.BaseSkinName.ToLower() == "lulu" ||
                             Player.CharData.BaseSkinName.ToLower() == "nami" ||
                             Player.CharData.BaseSkinName.ToLower() == "blitzcrank" ||
+                            Player.CharData.BaseSkinName.ToLower() == "katarina" ||
                             Player.CharData.BaseSkinName.ToLower() == "soraka")
                     {
                         if (rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex != (int)TargetingMode.LessCast)
@@ -159,8 +160,12 @@ namespace JinxsSupport
                             rootMenu.Item("TargetingMode").SetValue(new StringList(Enum.GetNames(typeof(TargetingMode)), (int)TargetingMode.LessCast));
                             PrintChat(string.Format("Setup Targeting Mode: {0}", Enum.GetName(typeof(TargetingMode), rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex)));
                         }
-                        menu.AddToMainMenu();
-                        Orbwalking.BeforeAttack += BeforeAttack;
+                        if (Player.CharData.BaseSkinName.ToLower() != "katarina")
+                        {
+                            menu.AddToMainMenu();
+                            Orbwalking.BeforeAttack += BeforeAttack;
+                        }
+
                     }
                     else
                     {

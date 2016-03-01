@@ -107,7 +107,7 @@ namespace JinxsSupport.Plugins
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.E", "Use E").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.R", "Use R").SetValue(true));
             comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.R.Count", "Minimum targets R")).SetValue(new Slider(3, 1, 5));
-            //comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.Ignite", "Use ignite").SetValue(false));
+            comboMenu.AddItem(new MenuItem("ElNamiReborn.Combo.R.Manual", "Semi-Manual cast R key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press)));
 
             _menu.AddSubMenu(comboMenu);
 
@@ -210,6 +210,7 @@ namespace JinxsSupport.Plugins
             PlayerHealing();
             AllyHealing();
             //AutoHarass();
+
         }
 
         #endregion
@@ -220,6 +221,14 @@ namespace JinxsSupport.Plugins
         {
             if (Player.IsRecalling() || Player.InFountain())
                 return;
+
+            if (spells[Spells.R].IsReady() && _menu.Item("ElNamiReborn.Combo.R.Manual", true).GetValue<KeyBind>().Active)        // 메뉴얼 R 발동
+            {
+                var target = TargetSelector.GetTarget(spells[Spells.R].Range, TargetSelector.DamageType.Magical);
+                spells[Spells.R].Cast(target);
+            }
+                
+
 
             var useHeal = _menu.Item("ElNamiReborn.Heal.Activate").GetValue<bool>();
             var playerHp = _menu.Item("ElNamiReborn.Heal.Player.HP").GetValue<Slider>().Value;
@@ -343,16 +352,6 @@ namespace JinxsSupport.Plugins
                 if (target.IsValidTarget(spells[Spells.W].Range))
                     spells[Spells.W].Cast(target);
             }
-
-            /*
-            if (useR && spells[Spells.R].IsReady()
-                && ObjectManager.Player.CountEnemiesInRange(spells[Spells.R].Range) >= countR
-                && spells[Spells.R].IsInRange(target.ServerPosition))
-            {
-                spells[Spells.R].CastIfHitchanceEquals(target, HitChance.VeryHigh, true);
-                //spells[Spells.R].CastIfWillHit(target, 2);
-            }
-            */
 
             /// 라인전(?)
             float nSumHPPercent = 0;
