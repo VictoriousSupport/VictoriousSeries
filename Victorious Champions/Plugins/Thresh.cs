@@ -90,8 +90,16 @@ namespace JinxsSupport.Plugins
                 var Wmenu = new Menu("W", "W");
                 {
                     Wmenu.AddItem(new MenuItem("C-UseHW", "Use Hooeked W", true).SetValue(false));
-                    Wmenu.AddItem(new MenuItem("Use-SafeLantern", "Use SafeLantern for our team", true).SetValue(true));
                     Wmenu.AddItem(new MenuItem("C-UseSW", "Use Shield W Min 3", true).SetValue(false));
+                    Wmenu.AddItem(new MenuItem("Use-SafeLantern", "Use Auto Safe Lantern", true).SetValue(true));
+                    List<string> myList = new List<string>();
+                    foreach (var myLanternGuy in HeroManager.Allies)
+                    {
+                        if (!myLanternGuy.IsMe)
+                            myList.Add(myLanternGuy.CharData.BaseSkinName);
+                    }
+                    Wmenu.AddItem(new MenuItem("SafeAutoLanternTo", "to...", true).SetValue(new StringList(new[] { myList[0], myList[1], myList[2], myList[3] }, 0)));                                 // TEST CODE
+                    Wmenu.AddItem(new MenuItem("SafeLanternKeyTo", "Lantern Key(T) to...", true).SetValue(new StringList(new[] { "All Allies", myList[0], myList[1], myList[2], myList[3] }, 0)));     // TEST CODE
 
                     combomenu.AddSubMenu(Wmenu);
                 }
@@ -265,14 +273,17 @@ namespace JinxsSupport.Plugins
                 Pull(Etarget);
             }
 
-            if (config.IsActive("SafeLanternKey"))
+            if (W.IsReady())
             {
-                SafeLanternKeybind();
-            }
+                if (config.IsActive("SafeLanternKey"))
+                {
+                    SafeLanternKeybind();
+                }
 
-            if (config.IsBool("Use-SafeLantern"))
-            {
-                SafeLantern();
+                if (config.IsBool("Use-SafeLantern"))
+                {
+                    SafeLantern();
+                }
             }
         }
 
@@ -591,17 +602,20 @@ namespace JinxsSupport.Plugins
             if (!ManaManager())
                 return;
 
-            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>()
-                .Where(x => x.IsAlly && !x.IsDead && !x.IsMe &&
-                Player.Distance(x.Position) < 1500 && 
+            foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsDead && !x.IsMe &&
+                Player.Distance(x.Position) < 1500 && config.Item("SafeAutoLanternTo", true).GetValue<StringList>().SelectedValue == x.CharData.BaseSkinName &&
                 !x.HasBuff("Recall")))
             {
-                if ((hero.HpPercents() < 20) && CheckSafeZone())    // 아군 HP 20 이하고, 내 주변에 적이 없을때
+                if ((hero.HpPercents() < 40) && CheckSafeZone(hero))    // 아군 HP 40 이하고, 내 주변에 적이 없을때
                 {
                     if (Player.Distance(hero.Position) <= W.Range)
                     {
+#if false
                         var Pos = W.GetPrediction(hero).CastPosition;
                         CastW(Pos);
+#else
+                        Entry.OKTWCast_SebbyLib(W, hero, false);       // 테스트 삼아 해보기...
+#endif
                     }
                     else
                     {
@@ -614,7 +628,7 @@ namespace JinxsSupport.Plugins
                     hero.HasBuffOfType(BuffType.Knockup) ||
                     hero.HasBuffOfType(BuffType.Flee))) 
                 {
-                    if ((hero.HpPercents() < 20) && CheckSafeZone())    // 아군 HP 20 이하고, 내 주변에 적이 없을때
+                    if (CheckSafeZone(hero))    
                     {
                         if (Player.Distance(hero.Position) <= W.Range)
                             CastW(hero.Position);
@@ -628,12 +642,13 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        static bool CheckSafeZone()             //by Jinx
+        static bool CheckSafeZone(Obj_AI_Hero myADC)             //by Jinx
         {
             // 내 주변 반경 500 안에 적군이 없으면...
-            var hit = HeroManager.Enemies.Where(i => i.IsValidTarget(500)).ToList();
+            var myEnemy = ObjectManager.Player.CountAlliesInRange(450);
+            var hisEnemy = myADC.CountEnemiesInRange(600);
 
-            if (hit.Count < 1)
+            if (myEnemy<1 && hisEnemy>1)    // 내 주변(450)에는 한놈도 없고, 우리팀 주변(600)에는 2명 이상 있을때
             {
                 return true;
             }
@@ -651,63 +666,65 @@ namespace JinxsSupport.Plugins
             Obj_AI_Hero Wtarget = null;
             float Hp = 0;
 
-            // 만약에 Q1 적중상태에서 T키를 누르면, 1500 범위내 가장 멀리 있는 녀석한테 렌턴이 날아간다.
-            if (Catched && CatchedQtarget != null && CatchedQtarget.Type == GameObjectType.obj_AI_Hero)
+            if (config.Item("SafeAutoLanternTo", true).GetValue<StringList>().SelectedIndex ==0 )   // All Allies
             {
-                Wtarget = GetFurthestAlly(CatchedQtarget);  // 1500 범위 내에 나와 가장 멀리 떨어져 있는 녀석을 데려온다.
-                if (Wtarget != null)
+                // 만약에 Q1 적중상태에서 T키를 누르면, 1500 범위내 가장 멀리 있는 녀석한테 렌턴이 날아간다.
+                if (Catched && CatchedQtarget != null && CatchedQtarget.Type == GameObjectType.obj_AI_Hero)
                 {
-                    if (Player.Distance(Wtarget.Position) <= W.Range)
+                    Wtarget = GetFurthestAlly(CatchedQtarget);  // 1500 범위 내에 나와 가장 멀리 떨어져 있는 녀석을 데려온다.
+                    if (Wtarget != null)
                     {
-                        Entry.OKTWCast_SebbyLib(W, Wtarget, false);
-                    }
-                    else if (Player.Distance(Wtarget.Position) > W.Range)
-                    {
-                        var Pos = Player.Position + (Wtarget.Position - Player.Position).Normalized() * W.Range;
-                        CastW(Pos);
-                    }
-                }
-            }
-            else // 만약 Q1이 맞지 않은 상태에서 T키를 누르면, 1500 범위내 가장 체력 낮은 녀석에게 준다.
-            {
-                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsDead && !x.IsMe && Player.Distance(x.Position) < 1750 && !x.HasBuff("Recall")))
-                {
-                    var temp = hero.HpPercents();
-
-                    if (hero.HasBuffOfType(BuffType.Suppression) ||
-                        hero.HasBuffOfType(BuffType.Taunt) ||
-                        hero.HasBuffOfType(BuffType.Knockup) ||
-                        hero.HasBuffOfType(BuffType.Flee))
-                    {
-                        if (Player.Distance(hero.Position) <= W.Range)
+                        if (Player.Distance(Wtarget.Position) <= W.Range)
                         {
-                            var Pos = W.GetPrediction(hero).CastPosition;
-                            CastW(Pos);
+                            Entry.OKTWCast_SebbyLib(W, Wtarget, false);
                         }
-
-                        else
+                        else if (Player.Distance(Wtarget.Position) > W.Range)
                         {
                             var Pos = Player.Position + (Wtarget.Position - Player.Position).Normalized() * W.Range;
                             CastW(Pos);
                         }
-                            
-                    }
-
-                    if (Wtarget == null && Hp == 0)
-                    {
-                        Wtarget = hero;
-                        Hp = temp;
-                    }
-                    else if (temp < Hp)
-                    {
-                        Wtarget = hero;
-                        Hp = temp;
                     }
                 }
-
-                // 가장 체력 낮은 녀석한테 주는 것이 기본이나, 한놈만 있으면 그놈한테 준다.
-                if (Wtarget != null)
+                else // 만약 Q1이 맞지 않은 상태에서 T키를 누르면, 1500 범위내 가장 체력 낮은 녀석에게 준다.
                 {
+                    foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsDead && !x.IsMe && Player.Distance(x.Position) < 1750 && !x.HasBuff("Recall")))
+                    {
+                        var temp = hero.HpPercents();
+
+                        if (hero.HasBuffOfType(BuffType.Suppression) ||
+                            hero.HasBuffOfType(BuffType.Taunt) ||
+                            hero.HasBuffOfType(BuffType.Knockup) ||
+                            hero.HasBuffOfType(BuffType.Flee))
+                        {
+                            if (Player.Distance(hero.Position) <= W.Range)
+                            {
+                                var Pos = W.GetPrediction(hero).CastPosition;
+                                CastW(Pos);
+                            }
+
+                            else
+                            {
+                                var Pos = Player.Position + (Wtarget.Position - Player.Position).Normalized() * W.Range;
+                                CastW(Pos);
+                            }
+
+                        }
+
+                        if (Wtarget == null && Hp == 0)
+                        {
+                            Wtarget = hero;
+                            Hp = temp;
+                        }
+                        else if (temp < Hp)
+                        {
+                            Wtarget = hero;
+                            Hp = temp;
+                        }
+                    }
+
+                    // 가장 체력 낮은 녀석한테 주는 것이 기본이나, 한놈만 있으면 그놈한테 준다.
+                    if (Wtarget != null)
+                    {
                         if (Player.Distance(Wtarget.Position) <= W.Range)
                         {
                             Entry.OKTWCast_SebbyLib(W, Wtarget, false);
@@ -717,17 +734,40 @@ namespace JinxsSupport.Plugins
                             var Pos = Player.Position + (Wtarget.Position - Player.Position).Normalized() * W.Range;
                             CastW(Pos);
                         }
-                      
+
+                    }
+                }
+            }
+            else
+            {
+                foreach (var hero in ObjectManager.Get<Obj_AI_Hero>().Where(x => x.IsAlly && !x.IsDead && !x.IsMe &&
+                    Player.Distance(x.Position) < 1750 && config.Item("SafeLanternKeyTo", true).GetValue<StringList>().SelectedValue == x.CharData.BaseSkinName && !x.HasBuff("Recall")))
+                {
+                    if (Player.Distance(hero.Position) <= W.Range)
+                    {
+#if false
+                        var Pos = W.GetPrediction(hero).CastPosition;
+                        CastW(Pos);
+#else
+                        Entry.OKTWCast_SebbyLib(W, hero, false);       // 테스트 삼아 해보기...
+#endif
+                    }
+                    else
+                    {
+                            var Pos = Player.Position + (hero.Position - Player.Position).Normalized() * W.Range;
+                            CastW(Pos);
+                    }
                 }
             }
 
 
 
+
         }
 
-        #endregion
+#endregion
 
-        #region Logic E
+#region Logic E
 
         static void CastE(Obj_AI_Hero target)
         {
@@ -773,9 +813,9 @@ namespace JinxsSupport.Plugins
             E.Cast(pos);
         }
 
-        #endregion
+#endregion
 
-        #region Logic R
+#region Logic R
 
         static void AutoR()
         {
@@ -804,9 +844,9 @@ namespace JinxsSupport.Plugins
             }
         }
 
-        #endregion
+#endregion
 
-        #region Others
+#region Others
 
         static Tuple<bool, Obj_AI_Hero> IsPulling()
         {
@@ -869,9 +909,9 @@ namespace JinxsSupport.Plugins
         }
 
 
-        #endregion 
+#endregion
 
-        #region Events
+#region Events
 
         static void Game_OnUpdate(EventArgs args)
         {
@@ -1021,7 +1061,7 @@ namespace JinxsSupport.Plugins
             if (!sender.IsEnemy)
                 return;
 
-            #region BLockFlashEscape
+#region BLockFlashEscape
             /*
             if (Menubool("BlockEscapeFlash") && sender.IsEnemy &&
                 args.SpellData == "summonerflash")
@@ -1042,9 +1082,9 @@ namespace JinxsSupport.Plugins
                 }
             }
             */
-            #endregion
+#endregion
 
-            #region BLockSpellsEscape
+#region BLockSpellsEscape
 
             if (args.SpellData == "summonerflash")
                 return;
@@ -1071,7 +1111,7 @@ namespace JinxsSupport.Plugins
                 }
             }
             */
-            #endregion
+#endregion
         }
         
         static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -1079,7 +1119,7 @@ namespace JinxsSupport.Plugins
 
         }
 
-        #endregion
+#endregion
     }
 
     internal class GameObjectEscapeDetectorEventArgs
@@ -1116,7 +1156,7 @@ namespace JinxsSupport.Plugins
 
         private static void InitializeSpells()
         {
-            #region Spells
+#region Spells
 
             //EscapeSpells.Add("summonerflash"); // ALL Champions Flash
             EscapeSpells.Add("LucianE"); // Lucian E
@@ -1154,7 +1194,7 @@ namespace JinxsSupport.Plugins
             // Queen
             // Hecarim R
 
-            #endregion
+#endregion
         }
 
         private static void Game_OnUpdate(EventArgs args)
@@ -1199,7 +1239,7 @@ namespace JinxsSupport.Plugins
 
     internal static class Extensions
     {
-        #region Obj_AI_Hero
+#region Obj_AI_Hero
 
         public static float HpPercents(this Obj_AI_Hero hero)
         {
@@ -1211,9 +1251,9 @@ namespace JinxsSupport.Plugins
             return hero.Mana / hero.MaxMana * 100;
         }
 
-        #endregion
+#endregion
 
-        #region Menu
+#region Menu
 
         public static bool IsBool(this Menu Menu, string item)
         {
@@ -1230,7 +1270,7 @@ namespace JinxsSupport.Plugins
             return Menu.Item(item, true).GetValue<Slider>().Value;
         }
 
-        #endregion
+#endregion
 
     }
 
@@ -1297,12 +1337,12 @@ namespace JinxsSupport.Plugins
         {
             var SpellSlots = new List<SpellSlot>();
             double dmg = 0;
-            #region SpellSots
+#region SpellSots
             SpellSlots.Add(SpellSlot.Q);
             SpellSlots.Add(SpellSlot.W);
             SpellSlots.Add(SpellSlot.E);
             SpellSlots.Add(SpellSlot.R);
-            #endregion
+#endregion
 
             foreach (var slot in SpellSlots)
             {
