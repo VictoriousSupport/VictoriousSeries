@@ -66,6 +66,8 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.5.5]
+    - 쓰레쉬 렌턴 옵션 추가 (특정 챔피언에게만 보내기, 특정 챔피언에게만 자동 랜턴 나가기)
   - [6.3.5.4]
     - 진 (Jhin) AA Drawing 추가
 	- 나미 R Cast 메뉴얼 키 적용 (T)

@@ -646,7 +646,7 @@ namespace JinxsSupport.Plugins
         {
             // 내 주변 반경 500 안에 적군이 없으면...
             var myEnemy = ObjectManager.Player.CountAlliesInRange(450);
-            var hisEnemy = myADC.CountEnemiesInRange(600);
+            var hisEnemy = myADC.CountEnemiesInRange(700);
 
             if (myEnemy<1 && hisEnemy>1)    // 내 주변(450)에는 한놈도 없고, 우리팀 주변(600)에는 2명 이상 있을때
             {
@@ -666,7 +666,7 @@ namespace JinxsSupport.Plugins
             Obj_AI_Hero Wtarget = null;
             float Hp = 0;
 
-            if (config.Item("SafeAutoLanternTo", true).GetValue<StringList>().SelectedIndex ==0 )   // All Allies
+            if (config.Item("SafeLanternKeyTo", true).GetValue<StringList>().SelectedIndex == 0 )   // All Allies
             {
                 // 만약에 Q1 적중상태에서 T키를 누르면, 1500 범위내 가장 멀리 있는 녀석한테 렌턴이 날아간다.
                 if (Catched && CatchedQtarget != null && CatchedQtarget.Type == GameObjectType.obj_AI_Hero)
