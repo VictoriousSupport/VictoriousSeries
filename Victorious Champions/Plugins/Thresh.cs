@@ -92,12 +92,18 @@ namespace JinxsSupport.Plugins
                     Wmenu.AddItem(new MenuItem("C-UseHW", "Use Hooeked W", true).SetValue(false));
                     Wmenu.AddItem(new MenuItem("C-UseSW", "Use Shield W Min 3", true).SetValue(false));
                     Wmenu.AddItem(new MenuItem("Use-SafeLantern", "Use Auto Safe Lantern", true).SetValue(true));
+
                     List<string> myList = new List<string>();
+                    for (int i=0; i < 4; i++)
+                        myList.Add("N/A");
+
+                    int count = 0;
                     foreach (var myLanternGuy in HeroManager.Allies)
                     {
                         if (!myLanternGuy.IsMe)
-                            myList.Add(myLanternGuy.CharData.BaseSkinName);
+                            myList[count++] = myLanternGuy.CharData.BaseSkinName;
                     }
+
                     Wmenu.AddItem(new MenuItem("SafeAutoLanternTo", "to...", true).SetValue(new StringList(new[] { myList[0], myList[1], myList[2], myList[3] }, 0)));                                 // TEST CODE
                     Wmenu.AddItem(new MenuItem("SafeLanternKeyTo", "Lantern Key(T) to...", true).SetValue(new StringList(new[] { "All Allies", myList[0], myList[1], myList[2], myList[3] }, 0)));     // TEST CODE
 

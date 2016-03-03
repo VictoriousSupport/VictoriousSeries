@@ -96,7 +96,7 @@ namespace JinxsSupport.Plugins
 
             Config.SubMenu("R Config").AddItem(new MenuItem("autoR", "Enable R", true).SetValue(true));
             Config.SubMenu("R Config").AddItem(new MenuItem("Rvisable", "Don't shot if enemy is not visable", true).SetValue(false));
-            Config.SubMenu("R Config").AddItem(new MenuItem("Rks", "Auto R if can kill in 3 hits", true).SetValue(true));
+            Config.SubMenu("R Config").AddItem(new MenuItem("Rks", "Auto R if can kill in 2 hits", true).SetValue(true));
             Config.SubMenu("R Config").AddItem(new MenuItem("useR", "Semi-manual cast R key", true).SetValue(new KeyBind("T".ToCharArray()[0], KeyBindType.Press))); //32 == space
             Config.SubMenu("R Config").AddItem(new MenuItem("MaxRangeR", "Max R range", true).SetValue(new Slider(2800, 3500, 0)));
             Config.SubMenu("R Config").AddItem(new MenuItem("MinRangeR", "Min R range", true).SetValue(new Slider(1000, 3500, 0)));
@@ -232,7 +232,7 @@ namespace JinxsSupport.Plugins
                 }
                 
                 if (!IsCastingR && Config.Item("Rks", true).GetValue<bool>() 
-                    && GetRdmg(t) * 4 > t.Health && t.CountAlliesInRange(500) == 0 && Player.CountEnemiesInRange(Config.Item("Rsafe", true).GetValue<Slider>().Value) == 0 
+                    && GetRdmg(t) * 3 > t.Health && t.CountAlliesInRange(500) == 0 && Player.CountEnemiesInRange(Config.Item("Rsafe", true).GetValue<Slider>().Value) == 0 
                     && Player.Distance(t) > Config.Item("MinRangeR", true).GetValue<Slider>().Value
                     && !Player.UnderTurret(true) && OktwCommon.ValidUlt(t) && !OktwCommon.IsSpellHeroCollision(t, R))
                 {
