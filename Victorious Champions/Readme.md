@@ -58,6 +58,9 @@ Supported Champion
  - W/E Cast: OKTW Prediction
  - W 기술 수정: 마나 소모 최소화, 콤보 기능으로 통합 (CC/AOE)
  - R 로직 기본 계수 수정
+11. **Katarina (MID)**
+ - Origin: ElKatarina by jQuery
+ - 
 98. Sona (WIP)
  - Origin: ElEasy by jQuery
 99. Leona (WIP)
@@ -66,6 +69,9 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.6.0]
+    - 카타리나(MID) 추가: ElKatarina 포팅
+	- 궁극기R 부분만 추가 분석 및 개선 요망, 나머지는 지금 설정 그대로 사용하면 될듯...
   - [6.3.5.6]
     - 쓰레쉬 버그 수정 (5명미만의 조합에서 크래쉬되는 오류, 챔피언 수를 무조건 5인으로 설정하여 나온 버그)
 	- 진 R: 최소 데미지를 3타에서 2타로 조정 (과거보다 피가 덜 남았을때 대응)

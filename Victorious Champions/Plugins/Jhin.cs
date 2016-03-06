@@ -307,7 +307,7 @@ namespace JinxsSupport.Plugins
             var t = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
             if (t.IsValidTarget())
             {
-                if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo)
+                if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) && !Player.IsWindingUp)
                 {
                     if (Config.Item("EmodeCombo", true).GetValue<StringList>().SelectedIndex == 1)
                     {
