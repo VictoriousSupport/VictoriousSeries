@@ -576,6 +576,7 @@ namespace JinxsSupport.Plugins
             {
                 spells[Spells.W].Cast();
             }
+
             if (useR && spells[Spells.R].IsReady())
             {
                 switch (rSort.SelectedIndex)

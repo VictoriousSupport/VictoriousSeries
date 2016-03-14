@@ -14,7 +14,7 @@ namespace JinxsSupport.Plugins
     internal class Jhin : IPlugin
     {
         private Menu Config;
-        public static Orbwalking.Orbwalker Orbwalker;
+        public static LeagueSharp.Common.Orbwalking.Orbwalker Orbwalker;
 
         private Spell E, Q, R, W;
         private float QMANA = 0, WMANA = 0, EMANA = 0, RMANA = 0;
@@ -65,7 +65,7 @@ namespace JinxsSupport.Plugins
         public void CreateMenu()
         {
             Config = new Menu("Vicroious Jhin", "menu", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
-            Orbwalker = new Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
+            Orbwalker = new LeagueSharp.Common.Orbwalking.Orbwalker(Config.SubMenu("Orbwalking"));
 
             Config.SubMenu("Draw").AddItem(new MenuItem("Draw_AA", "Draw AA", true).SetValue(true));
             Config.SubMenu("Draw").AddItem(new MenuItem("qRange", "Q range", true).SetValue(false));
@@ -191,16 +191,16 @@ namespace JinxsSupport.Plugins
             {
                 OktwCommon.blockMove = true;
                 OktwCommon.blockAttack = true;
-                Orbwalking.Attack = false;
-                Orbwalking.Move = false;
+                LeagueSharp.Common.Orbwalking.Attack = false;
+                LeagueSharp.Common.Orbwalking.Move = false;
                 return;
             }
             else
             {
                 OktwCommon.blockMove = false;
                 OktwCommon.blockAttack = false;
-                Orbwalking.Attack = true;
-                Orbwalking.Move = true;
+                LeagueSharp.Common.Orbwalking.Attack = true;
+                LeagueSharp.Common.Orbwalking.Move = true;
             }
 
 
@@ -279,7 +279,7 @@ namespace JinxsSupport.Plugins
                 {
                     if (Player.Distance(t) < Config.Item("MaxRangeW", true).GetValue<Slider>().Value)
                     {
-                        if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + WMANA)
+                        if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + WMANA)
                         {
                             // 콤보모드에 모두 통합시킴. 우선 CC 가능 타겟 / AOE / 그래도 없으면 일반 타겟
                             if (W.IsReady() && Config.Item("autoWcc", true).GetValue<bool>())
@@ -307,7 +307,7 @@ namespace JinxsSupport.Plugins
             var t = TargetSelector.GetTarget(E.Range, TargetSelector.DamageType.Physical);
             if (t.IsValidTarget())
             {
-                if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) && !Player.IsWindingUp)
+                if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.Combo) && !Player.IsWindingUp)
                 {
                     if (Config.Item("EmodeCombo", true).GetValue<StringList>().SelectedIndex == 1)
                     {
@@ -351,23 +351,23 @@ namespace JinxsSupport.Plugins
                         {
                             if (t.Health < GetQdmg(t))
                                 Q.CastOnUnit(minion);
-                            if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + EMANA)
+                            if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + EMANA)
                                 Q.CastOnUnit(minion);
                         }
                     }
                 }
 
             }
-            else if(!Orbwalking.CanAttack() && !Player.IsWindingUp)
+            else if(!LeagueSharp.Common.Orbwalking.CanAttack() && !Player.IsWindingUp)
             {
                 var t = torb as Obj_AI_Hero;
                 if (t.Health < GetQdmg(t) + GetWdmg(t))
                     Q.CastOnUnit(t);
-                if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + QMANA)       // 콤보 동작시
+                if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.Combo) && Player.Mana > RMANA + QMANA)       // 콤보 동작시
                     Q.CastOnUnit(t);
             }
 
-            if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear) && Player.ManaPercent > Config.Item("Mana", true).GetValue<Slider>().Value && Config.Item("farmQ", true).GetValue<bool>())
+            if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.LaneClear) && Player.ManaPercent > Config.Item("Mana", true).GetValue<Slider>().Value && Config.Item("farmQ", true).GetValue<bool>())
             {
                 var minionList = MinionManager.GetMinions(Player.ServerPosition, Q.Range);
 
@@ -394,7 +394,7 @@ namespace JinxsSupport.Plugins
 
         private void Jungle()
         {
-            if (Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.LaneClear)
+            if (Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.LaneClear)
             {
                 var mobs = MinionManager.GetMinions(Player.ServerPosition, Q.Range, MinionTypes.All, MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
                 if (mobs.Count > 0)
@@ -444,7 +444,7 @@ namespace JinxsSupport.Plugins
         }
         private void SetMana()
         {
-            if ((Orbwalker.ActiveMode == Orbwalking.OrbwalkingMode.Combo) || Player.HealthPercent < 20)
+            if ((Orbwalker.ActiveMode == LeagueSharp.Common.Orbwalking.OrbwalkingMode.Combo) || Player.HealthPercent < 20)
             {
                 QMANA = 0;
                 WMANA = 0;
