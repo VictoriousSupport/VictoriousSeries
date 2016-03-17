@@ -5,7 +5,7 @@
     using LeagueSharp;
     using LeagueSharp.Common;
 
-    internal class Mundo : IPlugin
+    internal class DrMundo : IPlugin
     {
         private static Obj_AI_Hero Player
         {
@@ -229,8 +229,8 @@
             if (castQ && Player.HealthPercent >= qHealth && target.IsValidTarget(q.Range))
             {
                 // OKTW Prediction
-                var qpred = q.GetPrediction(target);
-                if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)
+                //var qpred = q.GetPrediction(target);
+                //if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)
                     Entry.OKTWCast_SebbyLib(q, target, false);
             }
 
@@ -257,7 +257,9 @@
 
             if (castQ && Player.HealthPercent >= qHealth && target.IsValidTarget(q.Range))
             {
-                q.CastIfHitchanceEquals(target, HitChance.VeryHigh);
+                var qpred = q.GetPrediction(target);
+                if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)
+                    Entry.OKTWCast_SebbyLib(q, target, false);
             }
         }
 
@@ -383,7 +385,7 @@
             {
                 foreach (var target in HeroManager.Enemies.Where(enemy => enemy.IsValidTarget(q.Range) && !enemy.HasBuffOfType(BuffType.Invulnerability)).Where(target => target.Health < Player.GetSpellDamage(target, SpellSlot.Q)))
                 {
-                    q.CastIfHitchanceEquals(target, HitChance.VeryHigh);
+                    Entry.OKTWCast_SebbyLib(q, target, false);
                 }
             }
 

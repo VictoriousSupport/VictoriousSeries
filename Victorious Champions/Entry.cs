@@ -138,6 +138,7 @@ namespace JinxsSupport
 
                     if (Player.CharData.BaseSkinName.ToLower() == "sivir" ||
                         Player.CharData.BaseSkinName.ToLower() == "jhin" ||
+                        Player.CharData.BaseSkinName.ToLower() == "drmundo" ||
                         Player.CharData.BaseSkinName.ToLower() == "tristana")
                     {
                         if (rootMenu.Item("TargetingMode").GetValue<StringList>().SelectedIndex != (int)TargetingMode.LessAttack)
