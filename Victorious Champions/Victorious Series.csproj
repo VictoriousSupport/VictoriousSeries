@@ -41,8 +41,9 @@
     <Reference Include="LeagueSharp.Common">
       <HintPath>C:\Data.path\LeagueSharp\System\LeagueSharp.Common.dll</HintPath>
     </Reference>
-    <Reference Include="SebbyLib">
-      <HintPath>C:\Data.path\LeagueSharp\System\SebbyLib.dll</HintPath>
+    <Reference Include="SebbyLib, Version=1.0.0.1, Culture=neutral, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\Data.path\LeagueSharp\System\SebbyLib.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
       <HintPath>C:\Data.path\LeagueSharp\System\SharpDX.dll</HintPath>
@@ -72,6 +73,7 @@
     <Compile Include="Plugins\Katarina.cs" />
     <Compile Include="Plugins\Leona.cs" />
     <Compile Include="Plugins\Lulu.cs" />
+    <Compile Include="Plugins\Mundo.cs" />
     <Compile Include="Plugins\Nami.cs" />
     <Compile Include="Plugins\Sivir.cs" />
     <Compile Include="Plugins\Sona.cs" />

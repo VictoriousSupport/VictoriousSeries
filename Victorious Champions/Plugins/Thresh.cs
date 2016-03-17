@@ -388,7 +388,9 @@ namespace JinxsSupport.Plugins
                                         {
                                             try
                                             {
-                                                Q.SPredictionCast(target, HitChance.VeryHigh);
+                                                var qpred = Q.GetPrediction(target);
+                                                if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)
+                                                    Q.SPredictionCast(target, HitChance.VeryHigh);
                                             }
                                             catch (Exception exception)
                                             {
@@ -414,8 +416,9 @@ namespace JinxsSupport.Plugins
                                             && config.Item("GrabSelect" + enemy.ChampionName).GetValue<bool>() && Q.IsReady()
                                             && target.ChampionName == enemy.ChampionName && Player.Spellbook.GetSpell(SpellSlot.Q).Name == "ThreshQ")
                                         {
-                                            //CastOKTW(target, OKTWPrediction.HitChance.VeryHigh);
-                                            Entry.OKTWCast_SebbyLib(Q, target, false);
+                                            var qpred = Q.GetPrediction(target);
+                                            if (qpred.CollisionObjects.Count(h => h.IsEnemy && !h.IsDead && h is Obj_AI_Minion) < 1)
+                                                Entry.OKTWCast_SebbyLib(Q, target, false);
                                         }
                                     }
 
