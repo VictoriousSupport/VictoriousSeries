@@ -52,7 +52,7 @@
         {
             try
             {
-                config = new Menu("Victorious Mundo", Player.ChampionName, true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow); ;
+                config = new Menu("Victorious Mundo", Player.ChampionName, true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
 
                 //Adds the Orbwalker to the main menu
                 var orbwalkerMenu = config.AddSubMenu(new Menu("Orbwalker", "Orbwalker"));

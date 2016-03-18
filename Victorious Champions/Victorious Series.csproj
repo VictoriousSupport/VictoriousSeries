@@ -70,6 +70,7 @@
     <Compile Include="Plugins\Bard.cs" />
     <Compile Include="Plugins\Blitzcrank.cs" />
     <Compile Include="Plugins\Jhin.cs" />
+    <Compile Include="Plugins\Kalista.cs" />
     <Compile Include="Plugins\Katarina.cs" />
     <Compile Include="Plugins\Leona.cs" />
     <Compile Include="Plugins\Lulu.cs" />

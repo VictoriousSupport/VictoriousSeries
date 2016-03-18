@@ -60,7 +60,10 @@ Supported Champion
  - R 로직 기본 계수 수정
 11. **Katarina (MID)**
  - Origin: ElKatarina by jQuery
- - 
+12. **Mundo (TOP)**
+ - Origin: 
+13. **Kalista (ADC)**
+ - Origin: OKTW by Sebby
 98. Sona (WIP)
  - Origin: ElEasy by jQuery
 99. Leona (WIP)

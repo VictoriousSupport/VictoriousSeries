@@ -31,7 +31,7 @@ namespace JinxsSupport.Plugins
     internal class Thresh : IPlugin
     {
         
-        static Orbwalking.Orbwalker Orbwalker;
+        static SebbyLib.Orbwalking.Orbwalker Orbwalker;
         public static Menu config;
         static Spell Q, W, E, R;
         static Obj_AI_Hero catchedUnit = null;
@@ -63,7 +63,7 @@ namespace JinxsSupport.Plugins
             config = new Menu("Victorious Thresh", "Jinx's Thresh", true).SetFontStyle(System.Drawing.FontStyle.Regular, SharpDX.Color.GreenYellow);
 
             //OrbWalk
-            Orbwalker = new Orbwalking.Orbwalker(config.SubMenu("Orbwalking"));
+            Orbwalker = new SebbyLib.Orbwalking.Orbwalker(config.SubMenu("Orbwalking"));
             SPrediction.Prediction.Initialize(config);                  // SPreditcion
 
             //Target selector
