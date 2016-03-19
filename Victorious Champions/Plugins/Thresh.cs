@@ -174,6 +174,7 @@ namespace JinxsSupport.Plugins
             var Drawingmenu = new Menu("Drawings", "Drawings");
             {
                 Drawingmenu.AddItem(new MenuItem("DrawTarget", "Draw Target", true).SetValue(true));
+                Drawingmenu.AddItem(new MenuItem("LastHitHelp", "Lasthit Helper", true).SetValue(true));
                 Drawingmenu.AddItem(new MenuItem("Qcircle", "Q Range", true).SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
                 Drawingmenu.AddItem(new MenuItem("Wcircle", "W Range", true).SetValue(new Circle(false, Color.FromArgb(100, 255, 255, 255))));
                 Drawingmenu.AddItem(new MenuItem("Ecircle", "E Range", true).SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
@@ -216,7 +217,6 @@ namespace JinxsSupport.Plugins
             Interrupter2.OnInterruptableTarget += Interrupter2_OnInterruptableTarget;
             Obj_AI_Base.OnPlayAnimation += Obj_AI_Base_OnPlayAnimation;
             EscapeBlocker.OnDetectEscape += EscapeBlocker_OnDetectEscape;
-
         }
         #endregion
 
@@ -992,7 +992,16 @@ namespace JinxsSupport.Plugins
             var LCircle = config.Item("Lcircle", true).GetValue<Circle>();
             var target = TargetSelector.GetTarget(Q.Range, TargetSelector.DamageType.Magical);
 
-            
+
+            if(config.Item("LastHitHelp", true).GetValue<bool>())
+            {
+                foreach (var minion in MinionManager.GetMinions(Player.Position, Q.Range).Where(x => x.IsValidTarget()))
+                {
+                    if (minion.Health <= Player.GetAutoAttackDamage(minion, false))
+                        Render.Circle.DrawCircle(minion.Position,minion.BoundingRadius,System.Drawing.Color.Lime);
+                }
+            }
+
             if (QCircle.Active)
             {
                 Render.Circle.DrawCircle(ObjectManager.Player.Position, Q.Range, QCircle.Color);

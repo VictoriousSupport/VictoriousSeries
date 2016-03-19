@@ -72,6 +72,12 @@ Supported Champion
 
 Version History
 ---
+  - [6.3.8.1]
+    - 쓰레쉬 LastHit Helper System 추가
+  - [6.3.8.0]
+    - 칼리스타(ADC) 추가
+  - [6.3.7.0]
+    - 문도(TOP) 추가
   - [6.3.6.0]
     - 카타리나(MID) 추가: ElKatarina 포팅
 	- 궁극기R 부분만 추가 분석 및 개선 요망, 나머지는 지금 설정 그대로 사용하면 될듯...
